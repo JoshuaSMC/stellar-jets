@@ -385,7 +385,7 @@ stellar-jets/
 
 ## 👤 Autor
 
-- [@JoshuaSMC](https://github.com/[Usuario]) — Roles: TL Frontend · TL Backend · TL BBDD · Scrum Master · UX/UI
+- [@JoshuaSMC](https://github.com/JoshuaSMC) — Roles: TL Frontend · TL Backend · TL BBDD · Scrum Master · UX/UI
 
 ---
 
