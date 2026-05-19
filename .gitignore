@@ -1,0 +1,23 @@
+# Maven
+target/
+*.class
+*.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Node / Vite
+stellar-jets-frontend/node_modules/
+stellar-jets-frontend/dist/
+stellar-jets-frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
