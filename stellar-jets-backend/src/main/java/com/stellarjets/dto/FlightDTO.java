@@ -3,6 +3,7 @@ package com.stellarjets.dto;
 import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -22,6 +23,7 @@ public class FlightDTO {
     private boolean active;
     private CategoryDTO category;
     private List<FlightImageDTO> images;
+    private List<CharacteristicDTO> characteristics;
 
     /** URL de portada calculada, null-safe. Útil para tarjetas en listados. */
     public String getCoverImageUrl() {

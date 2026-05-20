@@ -27,16 +27,16 @@ public class FlightController {
     }
 
     /**
-     * GET /api/flights/search?query=tokio&categoryId=2&page=0&size=10
-     * Búsqueda por texto libre o filtro por categoría. Ambos son opcionales.
+     * GET /api/flights/search?query=tokio&categoryIds=2,3&page=0&size=10
+     * Búsqueda por texto libre o filtro por una o varias categorías.
      */
     @GetMapping("/search")
     public ResponseEntity<PagedResponseDTO<FlightDTO>> search(
-            @RequestParam(name = "query",      required = false) String query,
-            @RequestParam(name = "categoryId", required = false) Long categoryId,
-            @RequestParam(name = "page",       defaultValue = "0") int page,
-            @RequestParam(name = "size",       defaultValue = "10") int size) {
-        return ResponseEntity.ok(flightService.search(query, categoryId, page, size));
+            @RequestParam(name = "query",       required = false) String query,
+            @RequestParam(name = "categoryIds", required = false) List<Long> categoryIds,
+            @RequestParam(name = "page",        defaultValue = "0") int page,
+            @RequestParam(name = "size",        defaultValue = "10") int size) {
+        return ResponseEntity.ok(flightService.search(query, categoryIds, page, size));
     }
 
     /**

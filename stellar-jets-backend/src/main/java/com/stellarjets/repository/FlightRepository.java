@@ -22,6 +22,9 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
     Page<Flight> findByActiveTrueAndCategoryId(Long categoryId, Pageable pageable);
 
+    @Query("SELECT f FROM Flight f WHERE f.active = true AND f.category.id IN :categoryIds")
+    Page<Flight> findByActiveTrueAndCategoryIdIn(@Param("categoryIds") java.util.List<Long> categoryIds, Pageable pageable);
+
     /** Búsqueda en nombre, ciudad/IATA de origen y destino */
     @Query("""
             SELECT f FROM Flight f

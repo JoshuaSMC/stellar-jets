@@ -45,6 +45,8 @@ public class FlightRequestDTO {
 
     private Long categoryId;
 
+    private List<Long> characteristicIds;
+
     /** URLs de imágenes; la primera se convierte automáticamente en portada */
     private List<String> imageUrls;
 }

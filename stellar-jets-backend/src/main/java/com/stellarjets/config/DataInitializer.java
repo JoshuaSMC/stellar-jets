@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -16,19 +18,55 @@ import java.math.BigDecimal;
 public class DataInitializer {
 
     @Bean
-    CommandLineRunner initData(CategoryRepository catRepo, FlightRepository flightRepo) {
+    CommandLineRunner initData(UserRepository userRepo, CategoryRepository catRepo,
+                               FlightRepository flightRepo, CharacteristicRepository charRepo,
+                               PasswordEncoder encoder) {
         return args -> {
+            // ---- Usuarios demo ----
+            if (!userRepo.existsByEmail("admin@stellarjets.com")) {
+                userRepo.save(User.builder()
+                        .firstName("Admin").lastName("Stellar")
+                        .email("admin@stellarjets.com")
+                        .password(encoder.encode("admin123"))
+                        .role(Role.ADMIN).active(true).build());
+                log.info("Usuario admin creado: admin@stellarjets.com / admin123");
+            }
+            if (!userRepo.existsByEmail("user@stellarjets.com")) {
+                userRepo.save(User.builder()
+                        .firstName("Carlos").lastName("López")
+                        .email("user@stellarjets.com")
+                        .password(encoder.encode("user123"))
+                        .role(Role.USER).active(true).build());
+            }
+
+            // ---- Características demo ----
+            List<Characteristic> chars;
+            if (charRepo.count() == 0) {
+                chars = List.of(
+                    charRepo.save(char_("WiFi a bordo", "wifi")),
+                    charRepo.save(char_("Asientos reclinables", "armchair")),
+                    charRepo.save(char_("Comida gourmet", "utensils")),
+                    charRepo.save(char_("Entretenimiento en vuelo", "tv")),
+                    charRepo.save(char_("Equipaje incluido", "briefcase")),
+                    charRepo.save(char_("Lounge VIP", "wine")),
+                    charRepo.save(char_("Servicio premium", "star")),
+                    charRepo.save(char_("Vuelo directo", "plane"))
+                );
+            } else {
+                chars = charRepo.findAll();
+            }
+
             if (flightRepo.count() > 0) return;
 
             log.info("Cargando datos de demo...");
 
-            Category luxury    = catRepo.save(cat("Lujo",      "Vuelos privados de primera clase",   "star"));
-            Category adventure = catRepo.save(cat("Aventura",  "Destinos exóticos y remotos",        "globe"));
-            Category business  = catRepo.save(cat("Negocios",  "Vuelos ejecutivos y corporativos",   "briefcase"));
-            Category family    = catRepo.save(cat("Familia",   "Ideal para viajes en familia",       "users"));
+            Category luxury    = catRepo.save(cat("Lujo",      "Vuelos privados de primera clase",   "star",      "https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=600&q=80&fit=crop"));
+            Category adventure = catRepo.save(cat("Aventura",  "Destinos exóticos y remotos",        "globe",     "https://images.unsplash.com/photo-1682687982501-1e58ab814714?w=600&q=80&fit=crop"));
+            Category business  = catRepo.save(cat("Negocios",  "Vuelos ejecutivos y corporativos",   "briefcase", "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80&fit=crop"));
+            Category family    = catRepo.save(cat("Familia",   "Ideal para viajes en familia",       "users",     "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=600&q=80&fit=crop"));
 
             // ---- Aventura ----
-            save(flightRepo, "SJ-001", "Patagonia Extrema",
+            Flight patagonia = save(flightRepo, "SJ-001", "Patagonia Extrema",
                     "Vuelo charter hacia el fin del mundo",
                     new BigDecimal("2500.00"), 145,
                     airport("Buenos Aires", "Argentina", "EZE"),
@@ -36,6 +74,8 @@ public class DataInitializer {
                     12, new BigDecimal("4.9"), adventure,
                     "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800",
                     "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800");
+            patagonia.getCharacteristics().addAll(chars.subList(0, Math.min(4, chars.size())));
+            flightRepo.save(patagonia);
 
             save(flightRepo, "SJ-005", "Safari Kenia",
                     "Aventura salvaje en el corazón de África",
@@ -135,15 +175,19 @@ public class DataInitializer {
 
     // ---- helpers ----
 
-    private Category cat(String name, String description, String iconName) {
-        return Category.builder().name(name).description(description).iconName(iconName).build();
+    private Characteristic char_(String name, String iconName) {
+        return Characteristic.builder().name(name).iconName(iconName).build();
+    }
+
+    private Category cat(String name, String description, String iconName, String imageUrl) {
+        return Category.builder().name(name).description(description).iconName(iconName).imageUrl(imageUrl).build();
     }
 
     private AirportInfo airport(String city, String country, String iataCode) {
         return AirportInfo.builder().city(city).country(country).iataCode(iataCode).build();
     }
 
-    private void save(FlightRepository repo,
+    private Flight save(FlightRepository repo,
                       String flightNumber, String name, String description,
                       BigDecimal price, int durationMinutes,
                       AirportInfo origin, AirportInfo destination,
@@ -167,6 +211,6 @@ public class DataInitializer {
                     .build();
             flight.addImage(img);
         }
-        repo.save(flight);
+        return repo.save(flight);
     }
 }

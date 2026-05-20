@@ -6,6 +6,7 @@ import com.stellarjets.exception.ConflictException;
 import com.stellarjets.exception.ResourceNotFoundException;
 import com.stellarjets.repository.*;
 import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,25 +22,26 @@ public class FlightService {
     private final FlightRepository flightRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
+    private final CharacteristicRepository characteristicRepository;
+    private final CharacteristicService characteristicService;
 
     public PagedResponseDTO<FlightDTO> findAllActive(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         return toPagedResponse(flightRepository.findByActiveTrue(pageable));
     }
 
-    public PagedResponseDTO<FlightDTO> search(String query, Long categoryId, int page, int size) {
+    public PagedResponseDTO<FlightDTO> search(String query, List<Long> categoryIds, int page, int size) {
         Page<Flight> result;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         if (StringUtils.hasText(query)) {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
             result = flightRepository.searchActive(query.trim(), pageable);
-        } else if (categoryId != null) {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-            result = flightRepository.findByActiveTrueAndCategoryId(categoryId, pageable);
+        } else if (categoryIds != null && !categoryIds.isEmpty()) {
+            result = categoryIds.size() == 1
+                    ? flightRepository.findByActiveTrueAndCategoryId(categoryIds.get(0), pageable)
+                    : flightRepository.findByActiveTrueAndCategoryIdIn(categoryIds, pageable);
         } else {
-            // Sin filtros: orden aleatorio (requisito Sprint 1)
-            Pageable pageable = PageRequest.of(page, size);
-            result = flightRepository.findByActiveTrueRandom(pageable);
+            result = flightRepository.findByActiveTrueRandom(PageRequest.of(page, size));
         }
 
         return toPagedResponse(result);
@@ -129,6 +131,15 @@ public class FlightService {
             flight.setCategory(cat);
         }
 
+        if (dto.getCharacteristicIds() != null) {
+            flight.getCharacteristics().clear();
+            if (!dto.getCharacteristicIds().isEmpty()) {
+                flight.getCharacteristics().addAll(
+                        characteristicRepository.findAllById(dto.getCharacteristicIds())
+                );
+            }
+        }
+
         if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
             flight.getImages().clear();
             for (int i = 0; i < dto.getImageUrls().size(); i++) {
@@ -186,6 +197,8 @@ public class FlightService {
                 .active(f.isActive())
                 .category(f.getCategory() != null ? categoryService.toDTO(f.getCategory()) : null)
                 .images(images)
+                .characteristics(f.getCharacteristics() == null ? List.of()
+                        : f.getCharacteristics().stream().map(characteristicService::toDTO).toList())
                 .build();
     }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { X } from 'lucide-react'
 import { getActiveCategories, getRecommended, searchFlights } from '../api/flightApi'
 import type { Category, Flight, PagedResponse } from '../types'
 import FlightCard from '../components/FlightCard'
@@ -12,7 +13,7 @@ export default function HomePage() {
   const [loading, setLoading]           = useState(false)
   const [query, setQuery]               = useState('')
   const [searchInput, setSearchInput]   = useState('')
-  const [categoryId, setCategoryId]     = useState<number | null>(null)
+  const [categoryIds, setCategoryIds]   = useState<number[]>([])
   const [page, setPage]                 = useState(0)
   const searchRef                       = useRef<HTMLInputElement>(null)
 
@@ -21,10 +22,10 @@ export default function HomePage() {
     getRecommended().then(setRecommended).catch(console.error)
   }, [])
 
-  const fetchFlights = useCallback(async (q: string, cat: number | null, p: number) => {
+  const fetchFlights = useCallback(async (q: string, cats: number[], p: number) => {
     setLoading(true)
     try {
-      const data = await searchFlights(q || undefined, cat, p, 10)
+      const data = await searchFlights(q || undefined, cats.length ? cats : undefined, p, 10)
       setPaged(data)
     } finally {
       setLoading(false)
@@ -32,31 +33,33 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    fetchFlights(query, categoryId, page)
-  }, [fetchFlights, query, categoryId, page])
+    fetchFlights(query, categoryIds, page)
+  }, [fetchFlights, query, categoryIds, page])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setQuery(searchInput.trim())
-    setCategoryId(null)
+    setCategoryIds([])
     setPage(0)
   }
 
   const clearSearch = () => {
     setSearchInput('')
     setQuery('')
-    setCategoryId(null)
+    setCategoryIds([])
     setPage(0)
   }
 
-  const handleCategory = (id: number | null) => {
-    setCategoryId(id)
+  const toggleCategory = (id: number) => {
     setQuery('')
     setSearchInput('')
     setPage(0)
+    setCategoryIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
   }
 
-  const activeCategoryName = categories.find(c => c.id === categoryId)?.name
+  const hasFilters = query.length > 0 || categoryIds.length > 0
 
   return (
     <main>
@@ -158,32 +161,96 @@ export default function HomePage() {
         {/* CATEGORÍAS */}
         {categories.length > 0 && (
           <section className="mt-14">
-            <p className="text-[#64748B] text-xs uppercase tracking-[0.2em] mb-4">
-              Explorar por tipo de viaje
-            </p>
-            <div className="flex flex-wrap gap-2.5">
-              <button
-                onClick={() => handleCategory(null)}
-                className={`cat-pill ${categoryId === null && !query ? 'active' : ''}`}
-              >
-                Todos los vuelos
-              </button>
-              {categories.map(cat => (
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[#64748B] text-xs uppercase tracking-[0.2em]">
+                Explorar por tipo de viaje
+              </p>
+              {hasFilters && !query && (
                 <button
-                  key={cat.id}
-                  onClick={() => handleCategory(cat.id)}
-                  className={`cat-pill ${categoryId === cat.id ? 'active' : ''}`}
+                  onClick={clearSearch}
+                  className="flex items-center gap-1.5 text-xs text-gold-500 hover:text-gold-400 border border-gold-500/30 hover:border-gold-500 px-3 py-1.5 rounded-lg transition-all"
                 >
-                  {cat.name}
-                  <span className="opacity-50">({cat.flightCount})</span>
+                  Eliminar filtros <X className="w-3 h-3" />
                 </button>
-              ))}
+              )}
+            </div>
+
+            {/* Cards con scroll horizontal en mobile */}
+            <div className="flex gap-3 overflow-x-auto pb-3 sm:flex-wrap pt-2 pl-1" style={{ scrollbarWidth: 'none' }}>
+
+              {/* Card "Todos" */}
+              <button
+                onClick={clearSearch}
+                className="group relative flex-shrink-0 w-40 h-28 sm:w-44 sm:h-32 rounded-2xl overflow-hidden transition-all duration-200 focus:outline-none"
+                style={{ boxShadow: !hasFilters ? '0 0 0 2.5px #D4AF37' : '0 2px 12px rgba(0,0,0,0.10)' }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(135deg, #0A1428 0%, #1a2f55 100%)' }}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                  <svg className="w-6 h-6 text-gold-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                  </svg>
+                  <span className="text-white text-xs font-semibold tracking-wide">Todos</span>
+                  {!hasFilters && <div className="w-4 h-0.5 bg-gold-400 rounded-full" />}
+                </div>
+              </button>
+
+              {/* Cards de categoría */}
+              {categories.map(cat => {
+                const selected = categoryIds.includes(cat.id)
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    className="group relative flex-shrink-0 w-40 h-28 sm:w-44 sm:h-32 rounded-2xl overflow-hidden transition-all duration-200 focus:outline-none"
+                    style={{ boxShadow: selected ? '0 0 0 2.5px #D4AF37' : '0 2px 12px rgba(0,0,0,0.10)' }}
+                  >
+                    {/* Imagen de fondo */}
+                    {cat.imageUrl ? (
+                      <img
+                        src={cat.imageUrl}
+                        alt={cat.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-navy-800 to-navy-600" />
+                    )}
+
+                    {/* Overlay */}
+                    <div
+                      className="absolute inset-0 transition-opacity duration-200"
+                      style={{
+                        background: selected
+                          ? 'linear-gradient(to top, rgba(6,14,26,0.85) 0%, rgba(212,175,55,0.15) 100%)'
+                          : 'linear-gradient(to top, rgba(6,14,26,0.80) 0%, rgba(6,14,26,0.20) 100%)',
+                      }}
+                    />
+
+                    {/* Contenido */}
+                    <div className="absolute inset-x-0 bottom-0 px-3 pb-3">
+                      <p className="text-white text-xs font-semibold leading-tight truncate">{cat.name}</p>
+                      <p className="text-white/55 text-[10px] mt-0.5">{cat.flightCount} vuelos</p>
+                    </div>
+
+                    {/* Check seleccionado */}
+                    {selected && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gold-400 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </section>
         )}
 
         {/* RECOMENDADOS */}
-        {!query && !categoryId && recommended.length > 0 && (
+        {!hasFilters && recommended.length > 0 && (
           <section className="mt-16">
             <div className="flex items-end justify-between mb-8">
               <div>
@@ -231,16 +298,18 @@ export default function HomePage() {
         <section className="mt-16 pb-16">
           <div className="flex items-end justify-between mb-8">
             <div>
-              {(query || categoryId) && (
+              {hasFilters && (
                 <p className="text-gold-500 text-xs uppercase tracking-[0.2em] mb-2">
-                  {query ? `Búsqueda` : `Categoría`}
+                  {query ? 'Búsqueda' : 'Filtrado por categoría'}
                 </p>
               )}
               <h2 className="section-title">
                 {query
                   ? `Resultados para "${query}"`
-                  : categoryId
-                  ? `Vuelos de ${activeCategoryName}`
+                  : categoryIds.length === 1
+                  ? `Vuelos de ${categories.find(c => c.id === categoryIds[0])?.name}`
+                  : categoryIds.length > 1
+                  ? `${categoryIds.length} categorías seleccionadas`
                   : 'Todos los vuelos'}
               </h2>
             </div>
@@ -250,12 +319,12 @@ export default function HomePage() {
                   {paged.totalElements} vuelos
                 </span>
               )}
-              {(query || categoryId) && (
+              {query && (
                 <button
                   onClick={clearSearch}
-                  className="text-xs text-gold-500 hover:text-gold-400 border border-gold-500/30 hover:border-gold-500 px-3 py-1.5 rounded-lg transition-all"
+                  className="flex items-center gap-1.5 text-xs text-gold-500 hover:text-gold-400 border border-gold-500/30 hover:border-gold-500 px-3 py-1.5 rounded-lg transition-all"
                 >
-                  Limpiar filtro ✕
+                  Eliminar filtros <X className="w-3 h-3" />
                 </button>
               )}
             </div>

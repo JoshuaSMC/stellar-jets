@@ -8,10 +8,8 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
-/**
- * Endpoints de administración — Sprint 2 agregará autenticación con @PreAuthorize("ROLE_ADMIN")
- */
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -19,6 +17,8 @@ public class AdminController {
 
     private final FlightService flightService;
     private final CategoryService categoryService;
+    private final CharacteristicService characteristicService;
+    private final UserService userService;
 
     // ---- Vuelos ----
 
@@ -71,5 +71,41 @@ public class AdminController {
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ---- Características ----
+
+    @GetMapping("/characteristics")
+    public ResponseEntity<List<CharacteristicDTO>> listCharacteristics() {
+        return ResponseEntity.ok(characteristicService.findAll());
+    }
+
+    @PostMapping("/characteristics")
+    public ResponseEntity<CharacteristicDTO> createCharacteristic(@RequestBody CharacteristicDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(characteristicService.create(dto));
+    }
+
+    @PutMapping("/characteristics/{id}")
+    public ResponseEntity<CharacteristicDTO> updateCharacteristic(@PathVariable Long id,
+                                                                   @RequestBody CharacteristicDTO dto) {
+        return ResponseEntity.ok(characteristicService.update(id, dto));
+    }
+
+    @DeleteMapping("/characteristics/{id}")
+    public ResponseEntity<Void> deleteCharacteristic(@PathVariable Long id) {
+        characteristicService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ---- Usuarios ----
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> listUsers() {
+        return ResponseEntity.ok(userService.findAll());
+    }
+
+    @PatchMapping("/users/{id}/toggle-role")
+    public ResponseEntity<UserDTO> toggleUserRole(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.toggleRole(id));
     }
 }

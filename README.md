@@ -1,162 +1,8 @@
 # ✈️ Stellar Jets
 
-> *Donde las estrellas guían tu destino*
+Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse, explorar destinos, visualizar galerías de imágenes, filtrar por categoría y realizar reservas. Los administradores gestionan el catálogo completo de vuelos, categorías y características desde un panel dedicado.
 
-**Desafío Profesional · Digital House · Sprint 1 · 2026**
-
----
-
-## 📋 Entregable 01 — Documentación / Bitácora
-
-### Definición del proyecto
-
-**Stellar Jets** es una plataforma web de reservas de vuelos premium orientada a usuarios que buscan experiencias de viaje de alto nivel. La aplicación permite explorar destinos, visualizar detalles de cada vuelo con galería de imágenes, filtrar por categoría y realizar reservas. Un panel de administración permite gestionar el catálogo completo de productos.
-
-**Problema que resuelve:** centralizar la búsqueda y reserva de vuelos en una interfaz moderna, rápida y visualmente premium, inspirada en el estándar de aerolíneas de lujo como Qatar Airways.
-
-**Usuarios:**
-- **Usuario final:** explora vuelos, filtra por categoría, ve detalles y reserva.
-- **Administrador:** gestiona el catálogo (crear, editar, activar/desactivar, eliminar vuelos).
-
-**Alcance Sprint 1:** estructura base del sitio, registro y visualización de productos, eliminación, paginación, galería de imágenes y panel de administración.
-
-### Rol: Scrum Master
-
-| Ítem | Detalle |
-|------|---------|
-| **Metodología** | Scrum — iteraciones por sprint |
-| **Sprint** | Sprint 1 |
-| **Meta del sprint** | Estructura base + CRUD de productos + visualización |
-| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
-| **Herramientas** | GitHub (repositorio) · Maven (build) · Vite (dev server) |
-
-**Historias de usuario completadas:** US#1 · US#2 · US#3 · US#4 · US#5 · US#6 · US#7 · US#8 · US#9 · US#10 · US#11 ✅
-
----
-
-## 🎨 Entregable 02 — Identidad de Marca
-
-### Logo
-
-```
-  ✈  STELLAR JETS
-     PREMIUM AVIATION
-```
-
-- **Tipografía:** Cinzel 700 — serif romana uppercase (evoca lujo, elegancia atemporal)
-- **Color:** Dorado `#D4AF37` sobre fondo oscuro navy `#0A1428`
-- **Subtítulo:** "PREMIUM AVIATION" en Cinzel 400, tracking extendido, blanco/35%
-- **Slogan:** *Donde las estrellas guían tu destino*
-
-### Paleta de colores
-
-| Rol | Nombre | Hex | Uso |
-|-----|--------|-----|-----|
-| ![#0A1428](https://placehold.co/16x16/0A1428/0A1428.png) | **Navy Principal** | `#0A1428` | Header, footer, fondos oscuros |
-| ![#060E1A](https://placehold.co/16x16/060E1A/060E1A.png) | **Navy Profundo** | `#060E1A` | Footer background |
-| ![#D4AF37](https://placehold.co/16x16/D4AF37/D4AF37.png) | **Dorado Principal** | `#D4AF37` | Logo, botones primarios, acentos |
-| ![#F5D576](https://placehold.co/16x16/F5D576/F5D576.png) | **Dorado Claro** | `#F5D576` | Hover states, highlights |
-| ![#F4F7FB](https://placehold.co/16x16/F4F7FB/F4F7FB.png) | **Fondo Claro** | `#F4F7FB` | Background principal del sitio |
-| ![#FFFFFF](https://placehold.co/16x16/FFFFFF/FFFFFF.png) | **Blanco** | `#FFFFFF` | Texto sobre fondos oscuros |
-| ![#64748B](https://placehold.co/16x16/64748B/64748B.png) | **Gris Texto** | `#64748B` | Textos secundarios sobre fondo claro |
-
-### Tipografías
-
-| Rol | Familia | Peso | Uso |
-|-----|---------|------|-----|
-| **Display** | Cinzel | 700 | Logo, titulares premium |
-| **Cuerpo** | Inter | 300–700 | Todo el texto de la interfaz |
-
----
-
-## 🧪 Entregable 03 — Planificación y Ejecución de Tests
-
-### Plan de pruebas — Sprint 1
-
-**Objetivo:** verificar que todas las historias de usuario del Sprint 1 cumplen sus criterios de aceptación.
-**Entorno:** `http://localhost:5173` (frontend) · `http://localhost:8080` (backend H2 in-memory).
-
-**Tipos de test:**
-- 🤖 **API (JUnit 5 + MockMvc)** — tests de integración contra el backend con H2 in-memory.
-- 🌐 **UI (Selenium + WebDriverManager)** — tests end-to-end en Chrome headless. Requieren frontend y backend corriendo.
-- 👁 **Manual** — criterios visuales no automatizables.
-
-**Comandos de ejecución:**
-
-```bash
-# Solo tests de API (sin servidores):
-cd stellar-jets-backend
-JAVA_HOME=/opt/homebrew/opt/openjdk@21 mvn test -Dgroups="!ui"
-
-# Tests de UI con Selenium (requiere ambos servidores activos):
-cd stellar-jets-frontend && npm run dev &   # puerto 5173
-cd stellar-jets-backend && JAVA_HOME=... mvn spring-boot:run &  # puerto 8080
-cd stellar-jets-backend && JAVA_HOME=... mvn test -Dgroups=ui
-
-# Todos los tests:
-JAVA_HOME=/opt/homebrew/opt/openjdk@21 mvn test
-```
-
-**Resultado: 19/19 API tests PASS · 20 UI tests (Selenium)** — `BUILD SUCCESS`
-
----
-
-### Casos de prueba — ejecución completa
-
-| # | Tipo | Historia | Caso de prueba | Resultado esperado | Estado |
-|---|------|----------|---------------|-------------------|--------|
-| TC-01 | 🌐 Selenium | US#1 Header | Header visible en la página principal | Elemento `<header>` visible | ✅ PASS |
-| TC-02 | 🌐 Selenium | US#1 Header | Logo "STELLAR JETS" presente en el header | Texto encontrado en el header | ✅ PASS |
-| TC-03 | 🌐 Selenium | US#1 Header | Botones "Crear cuenta" e "Iniciar sesión" | Ambos textos presentes en el header | ✅ PASS |
-| TC-04 | 🌐 Selenium | US#1 Header | Clic en logo redirige al home | URL = `http://localhost:5173/` | ✅ PASS |
-| TC-05 | 🌐 Selenium | US#1 Header | Header fijo al hacer scroll | CSS `position: fixed` o `sticky` | ✅ PASS |
-| TC-06 | 🌐 Selenium | US#2 Home | Sección buscador visible | Input de búsqueda presente en `<main>` | ✅ PASS |
-| TC-07 | 🌐 Selenium | US#2 Home | Sección recomendados visible | Texto "recomend" presente en `<main>` | ✅ PASS |
-| TC-08 | 👁 Manual | US#2 Home | Background acorde a identidad de marca | Color `#F4F7FB` visible y consistente | ✅ PASS |
-| TC-09 | 👁 Manual | US#2 Home | Responsividad del home | Adapta correctamente a mobile, tablet y desktop | ✅ PASS |
-| TC-08 | 🤖 Auto | US#3 Admin | Crear producto con nombre único | HTTP 201 · producto creado con id asignado | ✅ PASS |
-| TC-09 | 🤖 Auto | US#3 Admin | Nombre duplicado | HTTP 409 · mensaje "nombre ya en uso" | ✅ PASS |
-| TC-10 | 🤖 Auto | US#3 Admin | Código de vuelo duplicado | HTTP 409 · mensaje "código ya en uso" | ✅ PASS |
-| TC-11 | 🤖 Auto | US#3 Admin | Subir múltiples imágenes | HTTP 201 · `images` devuelve 3 elementos | ✅ PASS |
-| TC-12 | 🤖 Auto | US#4 Home | Paginación máximo 10 productos | `pageSize=10` · `content.length ≤ 10` | ✅ PASS |
-| TC-13 | 🤖 Auto | US#4 Home | Búsqueda por nombre filtra correctamente | Solo aparecen productos que coinciden | ✅ PASS |
-| TC-14 | 🌐 Selenium | US#4 Home | Productos visibles en el home (máx 10) | Cards de vuelos presentes, cantidad ≤ 10 | ✅ PASS |
-| TC-15 | 👁 Manual | US#4 Home | Distribución 2 columnas × 5 filas | Layout correcto en desktop | ✅ PASS |
-| TC-16 | 🤖 Auto | US#5 Detalle | API devuelve nombre, descripción e imágenes | `name`, `description` e `images` presentes | ✅ PASS |
-| TC-17 | 🌐 Selenium | US#5 Detalle | Página de detalle carga correctamente | `<main>` visible en `/flights/1` | ✅ PASS |
-| TC-18 | 🌐 Selenium | US#5 Detalle | Header hero ocupa el ancho completo | `heroWidth ≥ viewportWidth - 20px` | ✅ PASS |
-| TC-19 | 🌐 Selenium | US#5 Detalle | Botón "Volver" presente en el detalle | Texto "Volver" encontrado en `<main>` | ✅ PASS |
-| TC-20 | 👁 Manual | US#5 Detalle | Título alineado a la izquierda | Título visible en el sector izquierdo | ✅ PASS |
-| TC-21 | 🤖 Auto | US#6 Galería | API devuelve 5 imágenes | `images.length = 5` | ✅ PASS |
-| TC-22 | 🤖 Auto | US#6 Galería | Primera imagen marcada como cover | `images[0].cover = true` · `images[1].cover = false` | ✅ PASS |
-| TC-23 | 🌐 Selenium | US#6 Galería | Imágenes visibles en el detalle | Elementos `<img>` presentes | ✅ PASS |
-| TC-24 | 🌐 Selenium | US#6 Galería | Botón "Ver más" presente | Texto "Ver más" encontrado en `<main>` | ✅ PASS |
-| TC-25 | 🌐 Selenium | US#6 Galería | Clic en "Ver más" abre lightbox | Elemento con `z-50` / `fixed inset` visible | ✅ PASS |
-| TC-26 | 👁 Manual | US#6 Galería | Layout desktop: imagen izq + grid 2×2 der | Layout correcto en pantallas ≥ 640px | ✅ PASS |
-| TC-27 | 👁 Manual | US#6 Galería | Galería responsive en mobile/tablet | Layout apilado y funcional | ✅ PASS |
-| TC-28 | 🌐 Selenium | US#7 Footer | Footer visible en el home | Elemento `<footer>` visible | ✅ PASS |
-| TC-29 | 🌐 Selenium | US#7 Footer | Footer contiene logo, año y copyright | "STELLAR JETS" + "©" / "2026" en footer | ✅ PASS |
-| TC-30 | 🌐 Selenium | US#7 Footer | Footer visible en página de detalle | Elemento `<footer>` visible en `/flights/1` | ✅ PASS |
-| TC-31 | 👁 Manual | US#7 Footer | Responsividad del footer | Adapta a mobile y tablet | ✅ PASS |
-| TC-27 | 🤖 Auto | US#8 Paginación | Metadatos de paginación presentes | `currentPage`, `totalPages`, `totalElements`, `first` | ✅ PASS |
-| TC-28 | 🤖 Auto | US#8 Paginación | Paginación con filtro de categoría | Responde 200 con array de productos | ✅ PASS |
-| TC-29 | 👁 Manual | US#8 Paginación | Botones « Inicio · ← Anterior · Siguiente → | Todos navegan correctamente | ✅ PASS |
-| TC-33 | 🤖 Auto | US#9 Admin | Endpoint admin API accesible | GET `/api/admin/flights` responde 200 | ✅ PASS |
-| TC-34 | 🤖 Auto | US#9 Admin | Toggle activo/inactivo | Estado cambia correctamente en la respuesta | ✅ PASS |
-| TC-35 | 🤖 Auto | US#9 Admin | Editar producto actualiza datos | Nombre y descripción actualizados en la respuesta | ✅ PASS |
-| TC-36 | 🌐 Selenium | US#9 Admin | URL `/administracion` accesible | Panel o mensaje visible en la página | ✅ PASS |
-| TC-37 | 🌐 Selenium | US#9 Admin | Botón "Lista de productos" presente | Texto encontrado en el panel | ✅ PASS |
-| TC-38 | 🌐 Selenium | US#9 Admin | Botón "Agregar producto" presente | Texto encontrado en el panel | ✅ PASS |
-| TC-39 | 👁 Manual | US#9 Admin | Panel no disponible en mobile | Mensaje de aviso en pantallas < 768px | ✅ PASS |
-| TC-35 | 🤖 Auto | US#10 Admin | Listado admin paginado con id y nombre | `content[*].id` y `content[*].name` presentes | ✅ PASS |
-| TC-36 | 🤖 Auto | US#10 Admin | Producto creado aparece en listado admin | Nombre presente en `content[*].name` | ✅ PASS |
-| TC-37 | 👁 Manual | US#10 Admin | Columnas Id, Nombre, Acciones visibles | Tabla con las 3 columnas requeridas | ✅ PASS |
-| TC-38 | 🤖 Auto | US#11 Admin | Eliminar producto: desaparece del sistema | DELETE 204 · GET posterior devuelve 404 | ✅ PASS |
-| TC-39 | 🤖 Auto | US#11 Admin | Eliminar producto inexistente | HTTP 404 | ✅ PASS |
-| TC-40 | 👁 Manual | US#11 Admin | Modal de confirmación al presionar Eliminar | Modal visible con opciones Confirmar / Cancelar | ✅ PASS |
-| TC-41 | 👁 Manual | US#11 Admin | Cancelar eliminación | Sin cambios, producto permanece en el listado | ✅ PASS |
-
-**Resultado total: 49/49 casos PASS ✅** (19 API · 20 Selenium · 10 Manuales)
+> *Donde las estrellas guían tu destino* · Desafío Profesional · Digital House · 2026
 
 ---
 
@@ -168,26 +14,34 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@21 mvn test
 - Tailwind CSS 3
 - React Router v6
 - Axios
+- Lucide React (iconografía)
 
 ### ☕ Backend
 - Java 21
 - Spring Boot 3.3.5
+- Spring Security 6 + JWT (JJWT 0.12)
 - Spring Data JPA + Hibernate
 - H2 Database (in-memory)
+- Spring Mail (Mailtrap sandbox)
 - Lombok 1.18.38
 - Maven 3.8+
+
+### 🧪 Testing
+- JUnit 5 + MockMvc (tests de integración API)
+- Selenium 4 + WebDriverManager (tests UI end-to-end)
+- Allure (reportes visuales)
+- Page Object Model
 
 ---
 
 ## 🚀 Instalación local
 
 ### 🧩 Requisitos previos
-- Java 21 — en macOS: `/opt/homebrew/opt/openjdk@21`
+- Java 21+
 - Node.js 18+
 - Maven 3.8+
 
 ### 📦 Clonar el repositorio
-
 ```bash
 git clone https://github.com/[usuario]/stellar-jets.git
 cd stellar-jets
@@ -197,18 +51,28 @@ cd stellar-jets
 
 ### ☕ Backend (`/stellar-jets-backend`)
 
-> La base de datos H2 es **in-memory**: se crea automáticamente al iniciar con 11 vuelos de ejemplo. No se necesita instalar ni configurar ninguna base de datos externa.
+> La base de datos H2 es **in-memory**: se crea automáticamente al iniciar con 11 vuelos, 4 categorías, 8 características y 2 usuarios de prueba. No requiere instalar ni configurar ninguna base de datos.
 
+#### Variables de entorno (opcionales — solo para notificación por email):
 ```bash
-cd stellar-jets-backend
-JAVA_HOME=/opt/homebrew/opt/openjdk@21 mvn spring-boot:run
+# Solo necesarias si querés probar el envío de emails con Mailtrap
+MAIL_USERNAME=<tu_mailtrap_user>
+MAIL_PASSWORD=<tu_mailtrap_pass>
 ```
 
-El backend estará disponible en `http://localhost:8080`
+#### Correr el backend:
+```bash
+cd stellar-jets-backend
 
-> **IntelliJ IDEA:** Settings → Maven → Runner → JRE → `/opt/homebrew/opt/openjdk@21`
+# Sin email:
+mvn spring-boot:run
 
-No se requiere archivo `.env` para el Sprint 1. La configuración está en `src/main/resources/application.properties`.
+# Con notificación por email (Mailtrap):
+MAIL_USERNAME=<user> MAIL_PASSWORD=<pass> mvn spring-boot:run
+```
+
+> El backend estará disponible en `http://localhost:8080`  
+> Swagger UI disponible en `http://localhost:8080/swagger-ui.html`
 
 ---
 
@@ -220,172 +84,390 @@ npm install
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:5173`
+> La aplicación estará disponible en `http://localhost:5173`
 
 No se requiere archivo `.env`. El frontend usa el proxy de Vite para redirigir `/api/*` → `http://localhost:8080`.
 
 ---
 
-## 📬 Endpoints de la API
+## 📬 Endpoints (API REST)
+
+> Swagger Docs disponible en: `http://localhost:8080/swagger-ui.html`
+
+### Públicos
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/flights/search?page=0&size=10` | Vuelos paginados (orden aleatorio sin filtro) | ❌ |
-| GET | `/api/flights/search?query=X` | Búsqueda por nombre, ciudad o código IATA | ❌ |
-| GET | `/api/flights/search?categoryId=1` | Filtrar por categoría | ❌ |
+| POST | `/api/auth/register` | Registro de usuario → JWT | ❌ |
+| POST | `/api/auth/login` | Login → JWT | ❌ |
+| POST | `/api/auth/resend-confirmation` | Reenviar email de confirmación | ❌ |
+| GET | `/api/flights/search` | Vuelos paginados con búsqueda y filtro por categoría | ❌ |
 | GET | `/api/flights/recommended` | Top 10 vuelos por rating | ❌ |
-| GET | `/api/flights/{id}` | Detalle de un vuelo | ❌ |
-| GET | `/api/admin/flights` | Listado admin paginado | ❌ |
-| POST | `/api/admin/flights` | Crear vuelo | ❌ |
-| PUT | `/api/admin/flights/{id}` | Editar vuelo | ❌ |
-| DELETE | `/api/admin/flights/{id}` | Eliminar vuelo | ❌ |
-| PATCH | `/api/admin/flights/{id}/toggle` | Activar / desactivar vuelo | ❌ |
-| GET | `/api/categories` | Todas las categorías | ❌ |
-| GET | `/api/categories/active` | Categorías con vuelos activos | ❌ |
+| GET | `/api/flights/{id}` | Detalle de vuelo con características | ❌ |
+| GET | `/api/categories` | Listado de categorías | ❌ |
+| GET | `/api/characteristics` | Listado de características | ❌ |
 
-> Sprint 1 no incluye autenticación — se implementa en Sprint 2.
+### Protegidos — Rol ADMIN
+
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| GET / POST | `/api/admin/flights` | Listar / crear vuelo | ✅ ADMIN |
+| PUT / DELETE | `/api/admin/flights/{id}` | Editar / eliminar vuelo | ✅ ADMIN |
+| PATCH | `/api/admin/flights/{id}/toggle` | Activar / desactivar vuelo | ✅ ADMIN |
+| POST / PUT / DELETE | `/api/admin/categories/{id?}` | CRUD categorías | ✅ ADMIN |
+| POST / PUT / DELETE | `/api/admin/characteristics/{id?}` | CRUD características | ✅ ADMIN |
+| GET | `/api/admin/users` | Listar usuarios | ✅ ADMIN |
+| PATCH | `/api/admin/users/{id}/toggle-role` | Cambiar rol USER ↔ ADMIN | ✅ ADMIN |
+
+---
+
+## 📖 Documentación de la API (Swagger / OpenAPI)
+
+La API está documentada con **springdoc-openapi 2.6.0** (estándar para Spring Boot 3.x en 2026).
+
+Una vez levantado el backend, accedé a:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+Desde Swagger UI podés:
+- Ver todos los endpoints con sus parámetros y respuestas
+- Probar endpoints públicos directamente desde el navegador
+- Autenticarte con JWT para probar endpoints protegidos:
+  1. Ejecutar `POST /api/auth/login` con las credenciales de admin
+  2. Copiar el token de la respuesta
+  3. Hacer clic en el botón **Authorize** 🔒 (arriba a la derecha)
+  4. Pegar el token y confirmar
+  5. Todos los endpoints admin quedan habilitados en la sesión
 
 ---
 
 ## 🗂️ Diagrama de Entidades
 
 ```
-┌─────────────────────────────────────────────┐
-│                   Flight                    │
-├─────────────────────────────────────────────┤
-│ id (PK)          bigint                     │
-│ flightNumber     varchar                    │
-│ name             varchar (único)            │
-│ description      text                       │
-│ price            decimal                    │
-│ availableSeats   int                        │
-│ durationMinutes  int                        │
-│ rating           double                     │
-│ active           boolean                    │
-│ origin_city      varchar  ┐ @Embeddable     │
-│ origin_country   varchar  │ AirportInfo     │
-│ origin_iataCode  varchar  ┘                 │
-│ dest_city        varchar  ┐ @Embeddable     │
-│ dest_country     varchar  │ AirportInfo     │
-│ dest_iataCode    varchar  ┘                 │
-│ category_id (FK) bigint                     │
-└─────────────────────────────────────────────┘
-         │ 1                        │ 1
-         │                          │
-         ▼ N                        ▼ N
-┌─────────────────┐     ┌─────────────────────┐
-│    Category     │     │     FlightImage      │
-├─────────────────┤     ├─────────────────────┤
-│ id (PK)         │     │ id (PK)             │
-│ name            │     │ url                 │
-│ description     │     │ altText             │
-└─────────────────┘     │ cover   boolean     │
-                        │ flight_id (FK)      │
-                        └─────────────────────┘
+┌─────────────────────────────────────────┐       ┌──────────────────────┐
+│                 Flight                  │       │        User          │
+├─────────────────────────────────────────┤       ├──────────────────────┤
+│ id            bigint (PK)               │       │ id (PK)              │
+│ flightNumber  varchar                   │       │ firstName            │
+│ name          varchar (único)           │       │ lastName             │
+│ description   text                      │       │ email (único)        │
+│ price         decimal                   │       │ password (BCrypt)    │
+│ rating        double                    │       │ role  USER / ADMIN   │
+│ active        boolean                   │       └──────────────────────┘
+│ origin_*      @Embeddable AirportInfo   │
+│ dest_*        @Embeddable AirportInfo   │
+│ category_id   bigint (FK)              │
+└─────────────────────────────────────────┘
+       │ 1              │ 1                    │ N
+       ▼ N              ▼ N                    ▼ N
+┌──────────┐    ┌──────────────┐    ┌──────────────────────┐
+│ Category │    │ FlightImage  │    │    Characteristic    │
+├──────────┤    ├──────────────┤    ├──────────────────────┤
+│ id (PK)  │    │ id (PK)      │    │ id (PK)              │
+│ name     │    │ url          │    │ name                 │
+│ imageUrl │    │ cover bool   │    │ iconName             │
+└──────────┘    └──────────────┘    └──────────────────────┘
 ```
 
 ---
 
-## ✅ Checklist Sprint 1
+## 🧪 Testing
 
-### US#1 · Header
-- [x] Ocupa el 100% del ancho en todas las páginas
-- [x] Fijo en la parte superior al hacer scroll
-- [x] Consistente en todas las páginas
-- [x] Responsive — menú hamburguesa en mobile
-- [x] Logo y slogan alineados a la izquierda
-- [x] Clic en logo redirige al home
-- [x] Botones "Crear cuenta" e "Iniciar sesión" a la derecha (sin funcionalidad — Sprint 2)
+### Estrategia
 
-### US#2 · Cuerpo del sitio
-- [x] Background `#F4F7FB` coherente con identidad de marca
-- [x] Ocupa el 100% del alto de la pantalla
-- [x] Responsive para diferentes dispositivos
-- [x] Tres secciones visibles: buscador, categorías y recomendaciones
+| Tipo | Herramienta | Requiere servidores |
+|------|-------------|---------------------|
+| 🤖 API / Integración | JUnit 5 + MockMvc + H2 | No — solo Maven |
+| 🌐 UI / End-to-end | Selenium + WebDriverManager | Sí — backend + frontend |
+| 👁 Manual | Navegador | Sí |
 
-### US#3 · Registrar producto
-- [x] Botón "Agregar producto" en el panel admin
-- [x] Formulario con nombre, descripción e imágenes
-- [x] Soporte para una o más imágenes (URLs)
-- [x] Producto guardado correctamente en la base de datos
-- [x] Producto aparece en el listado y en el home
-- [x] Error si se intenta agregar un nombre duplicado
+### Archivos de test
 
-### US#4 · Visualizar productos en home
-- [x] Máximo 10 productos por página
-- [x] Sin productos repetidos
-- [x] Distribuidos en 2 columnas × máximo 5 filas
-- [x] Orden verdaderamente aleatorio (`ORDER BY RAND()` — H2)
+| Archivo | Tipo | Tests |
+|---------|------|-------|
+| `Sprint1ControllerTest.java` | API | 18 — US#3 al US#11 |
+| `Sprint2ControllerTest.java` | API | 28 — US#12 al US#21 |
+| `Sprint1UITest.java` | UI Selenium | 20 — US#1 al US#11 |
+| `Sprint2UITest.java` | UI Selenium | 22 — US#12 al US#21 |
 
-### US#5 · Detalle de producto
-- [x] Header hero al 100% del ancho con imagen del vuelo
-- [x] Título alineado a la izquierda
-- [x] Flecha "← Volver" alineada a la derecha
-- [x] Body con texto descriptivo e imágenes del producto
+**Page Object Model** — cada página tiene su clase en `ui/pages/`:
+`BasePage` · `HomePage` · `LoginPage` · `RegisterPage` · `FlightDetailPage` · `AdminPanelPage`
 
-### US#6 · Galería de imágenes
-- [x] Bloque al 100% del ancho con 5 imágenes visibles
-- [x] Imagen principal en la mitad izquierda
-- [x] Grid 2 filas × 2 columnas en la mitad derecha
-- [x] Botón "Ver más (N)" en la esquina inferior derecha
-- [x] Lightbox con navegación entre todas las imágenes
-- [x] Responsive en mobile y tablet
+**Usuarios de prueba** (creados automáticamente):
 
-### US#7 · Footer
-- [x] Ocupa el 100% del ancho en todas las páginas
-- [x] Isologotipo, año y copyright alineados a la izquierda
-- [x] Responsive
+| Email | Password | Rol |
+|-------|----------|-----|
+| `admin@stellarjets.com` | `admin123` | ADMIN |
+| `user@stellarjets.com` | `user123` | USER |
 
-### US#8 · Paginación
-- [x] Máximo 10 productos por página
-- [x] Contador de páginas funcional
-- [x] Botones: « Inicio · ← Anterior · Siguiente →
-- [x] Funciona con búsqueda y filtros de categoría
+### Cómo ejecutar
 
-### US#9 · Panel de administración
-- [x] URL `/administracion` para acceder al panel
-- [x] Menú con todas las funciones desarrolladas
-- [x] No responsive — mensaje en mobile: "Panel no disponible en dispositivos móviles"
+**Tests de API** (sin servidores):
+```bash
+cd stellar-jets-backend
+mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest"
+```
 
-### US#10 · Listar productos
-- [x] Botón "Lista de productos" en el panel admin
-- [x] Lista todos los productos disponibles
-- [x] Columnas: ID, Nombre, Acciones (+ Ruta, Categoría, Precio, Estado)
+**Tests de UI con Selenium** (3 terminales):
+```bash
+# Terminal 1 — backend:
+cd stellar-jets-backend
+MAIL_USERNAME=test MAIL_PASSWORD=test mvn spring-boot:run
 
-### US#11 · Eliminar producto
-- [x] Acción "Eliminar" por producto en el listado admin
-- [x] Modal de confirmación antes de eliminar
-- [x] Confirmación: elimina de BD y desaparece del listado
-- [x] Cancelación: sin cambios
+# Terminal 2 — frontend:
+cd stellar-jets-frontend
+npm run dev
+
+# Terminal 3 — tests UI:
+cd stellar-jets-backend
+mvn test -Dtest="Sprint1UITest,Sprint2UITest"
+```
+
+**Todos los tests:**
+```bash
+cd stellar-jets-backend
+mvn test
+```
+
+**Reporte visual Allure:**
+```bash
+cd stellar-jets-backend
+mvn allure:serve -Dallure.serve.port=5050
+# Abre automáticamente http://localhost:5050
+```
+
+> No abrir `index.html` directamente con `file://` — el reporte queda en "loading". Usar siempre `allure:serve`.
+
+### Resultados
+
+| Suite | API | UI Selenium | Manual | Total |
+|-------|-----|-------------|--------|-------|
+| Sprint 1 | 18 ✅ | 20 ✅ | 12 ✅ | **50 / 50** |
+| Sprint 2 | 28 ✅ | 22 ✅ | 12 ✅ | **62 / 62** |
 
 ---
 
-## 🏗️ Estructura del proyecto
+## 📋 Entregables del curso
 
+### Sprint 1
+
+#### Entregable 01 — Documentación / Bitácora
+
+**Definición del proyecto:**
+**Stellar Jets** es una plataforma web de reservas de vuelos premium. Centraliza la búsqueda y reserva de vuelos en una interfaz moderna, inspirada en aerolíneas de lujo. Los usuarios exploran destinos, visualizan galerías de imágenes, filtran por categoría y realizan reservas. Los administradores gestionan el catálogo completo desde un panel dedicado.
+
+**Rol: Scrum Master**
+
+| Ítem | Detalle |
+|------|---------|
+| **Metodología** | Scrum — iteraciones por sprint |
+| **Sprint** | Sprint 1 |
+| **Meta del sprint** | Header · Home · Detalle de producto · Galería · Panel admin · Paginación |
+| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
+| **Herramientas** | GitHub · Maven · Vite |
+
+**Bitácora:**
+
+| Iteración | Actividad | Estado |
+|-----------|-----------|--------|
+| 1 | Estructura base (Spring Boot + React + Vite) | ✅ |
+| 2 | Header fijo con logo y botones de navegación | ✅ |
+| 3 | Home page con buscador, categorías y recomendados | ✅ |
+| 4 | Entidad `Flight` con `AirportInfo` y `FlightImage` | ✅ |
+| 5 | CRUD de vuelos desde el panel admin | ✅ |
+| 6 | Página de detalle con header hero | ✅ |
+| 7 | Galería de imágenes con lightbox | ✅ |
+| 8 | Footer con isologotipo y copyright | ✅ |
+| 9 | Paginación con metadatos | ✅ |
+| 10 | Búsqueda por nombre, ciudad o código IATA | ✅ |
+| 11 | Toggle activo/inactivo y eliminación de vuelos | ✅ |
+
+**US completadas:** US#1 · US#2 · US#3 · US#4 · US#5 · US#6 · US#7 · US#8 · US#9 · US#10 · US#11 ✅
+
+#### Entregable 02 — Identidad de Marca
+
+**Logo:**
 ```
-stellar-jets/
-├── stellar-jets-backend/
-│   └── src/main/java/com/stellarjets/
-│       ├── controller/     FlightController · CategoryController
-│       ├── service/        FlightService · CategoryService
-│       ├── entity/         Flight · Category · FlightImage · AirportInfo
-│       ├── dto/            FlightDTO · FlightRequestDTO · AirportDTO · PagedResponseDTO
-│       ├── repository/     FlightRepository · CategoryRepository
-│       └── config/         DataInitializer (11 vuelos de ejemplo al iniciar)
-│
-└── stellar-jets-frontend/
-    └── src/
-        ├── components/     Header · Footer · FlightCard · ImageGallery · Pagination
-        ├── pages/          HomePage · FlightDetailPage · AdminPage
-        ├── api/            flightApi.ts
-        └── types/          index.ts
+  ✈  STELLAR JETS
+     PREMIUM AVIATION
 ```
+- Tipografía: Cinzel 700 — serif romana uppercase
+- Color: Dorado `#D4AF37` sobre navy `#0A1428`
+- Slogan: *Donde las estrellas guían tu destino*
+
+**Paleta de colores:**
+
+| Nombre | Hex | Uso |
+|--------|-----|-----|
+| Navy Principal | `#0A1428` | Header, footer, fondos oscuros |
+| Navy Profundo | `#060E1A` | Footer background |
+| Dorado Principal | `#D4AF37` | Logo, botones primarios, acentos |
+| Dorado Claro | `#F5D576` | Hover states |
+| Fondo Claro | `#F4F7FB` | Background del sitio |
+| Blanco | `#FFFFFF` | Texto sobre fondos oscuros |
+| Gris Texto | `#64748B` | Textos secundarios |
+
+**Tipografías:**
+
+| Rol | Familia | Peso |
+|-----|---------|------|
+| Display | Cinzel | 700 |
+| Cuerpo | Inter | 300–700 |
+
+---
+
+### Sprint 2
+
+#### Entregable 01 — Documentación / Bitácora
+
+**Definición del proyecto:**
+Continuación del Sprint 1. El alcance del Sprint 2 agrega autenticación completa con JWT (registro, login, logout, roles), gestión de características por vuelo con íconos Lucide, sección de categorías con imágenes, filtro multi-categoría y notificación por email al registrarse.
+
+**Rol: Scrum Master**
+
+| Ítem | Detalle |
+|------|---------|
+| **Metodología** | Scrum — iteraciones por sprint |
+| **Sprint** | Sprint 2 |
+| **Meta del sprint** | Autenticación JWT · Características · Categorías con imagen · Notificación email |
+| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
+| **Herramientas** | GitHub · Maven · Vite · Spring Security · Mailtrap (sandbox SMTP) |
+
+**Bitácora:**
+
+| Iteración | Actividad | Estado |
+|-----------|-----------|--------|
+| 1 | Spring Security + JWT stateless | ✅ |
+| 2 | Endpoints `/api/auth/register` y `/api/auth/login` | ✅ |
+| 3 | Entidad `User` con roles USER / ADMIN, BCrypt | ✅ |
+| 4 | Página de registro con validación (solo letras en nombre) | ✅ |
+| 5 | Página de login con persistencia de sesión | ✅ |
+| 6 | Logout — limpieza del token JWT en localStorage | ✅ |
+| 7 | Protección de rutas admin con rol ADMIN | ✅ |
+| 8 | CRUD de características con ícono Lucide | ✅ |
+| 9 | Asociación características ↔ vuelos desde admin | ✅ |
+| 10 | Componente `CharIcon` compartido | ✅ |
+| 11 | Notificación por email (`@Async`, Mailtrap sandbox) | ✅ |
+| 12 | Pantalla post-registro con reenvío de confirmación | ✅ |
+| 13 | Tarjetas de categorías con imagen en el home | ✅ |
+| 14 | Filtro multi-categoría con selección visual | ✅ |
+| 15 | CRUD de categorías con URL de imagen desde admin | ✅ |
+
+**US completadas:** US#12 · US#13 · US#14 · US#15 · US#16 · US#17 · US#18 · US#19 · US#20 · US#21 ✅
+
+#### Entregable 02 — Planificación y Ejecución de Tests
+
+Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecución y resultados.
+
+**Casos de prueba Sprint 1:**
+
+| # | Tipo | US | Caso de prueba | Estado |
+|---|------|----|---------------|--------|
+| TC-01 | 🌐 Selenium | US#1 | Header visible en la página principal | ✅ |
+| TC-02 | 🌐 Selenium | US#1 | Logo "STELLAR JETS" presente en el header | ✅ |
+| TC-03 | 🌐 Selenium | US#1 | Botones "Crear cuenta" e "Iniciar sesión" | ✅ |
+| TC-04 | 🌐 Selenium | US#1 | Clic en logo redirige al home | ✅ |
+| TC-05 | 🌐 Selenium | US#1 | Header fijo al hacer scroll | ✅ |
+| TC-06 | 🌐 Selenium | US#2 | Sección buscador visible en el home | ✅ |
+| TC-07 | 🌐 Selenium | US#2 | Sección recomendados visible | ✅ |
+| TC-08 | 👁 Manual | US#2 | Background acorde a identidad de marca | ✅ |
+| TC-09 | 👁 Manual | US#2 | Responsividad del home | ✅ |
+| TC-10 | 🤖 API | US#3 | Crear producto con nombre único → HTTP 201 | ✅ |
+| TC-11 | 🤖 API | US#3 | Nombre duplicado → HTTP 409 | ✅ |
+| TC-12 | 🤖 API | US#3 | Código de vuelo duplicado → HTTP 409 | ✅ |
+| TC-13 | 🤖 API | US#3 | Subir múltiples imágenes → array de 3 | ✅ |
+| TC-14 | 🤖 API | US#4 | Paginación máximo 10 productos | ✅ |
+| TC-15 | 🤖 API | US#4 | Búsqueda por nombre filtra correctamente | ✅ |
+| TC-16 | 🌐 Selenium | US#4 | Productos visibles en el home | ✅ |
+| TC-17 | 👁 Manual | US#4 | Distribución 2 columnas × 5 filas | ✅ |
+| TC-18 | 🤖 API | US#5 | API devuelve nombre, descripción e imágenes | ✅ |
+| TC-19 | 🌐 Selenium | US#5 | Página de detalle carga correctamente | ✅ |
+| TC-20 | 🌐 Selenium | US#5 | Header hero ocupa el ancho completo | ✅ |
+| TC-21 | 🌐 Selenium | US#5 | Botón "Volver" presente en el detalle | ✅ |
+| TC-22 | 👁 Manual | US#5 | Título alineado a la izquierda | ✅ |
+| TC-23 | 🤖 API | US#6 | API devuelve 5 imágenes | ✅ |
+| TC-24 | 🤖 API | US#6 | Primera imagen marcada como cover | ✅ |
+| TC-25 | 🌐 Selenium | US#6 | Imágenes visibles en el detalle | ✅ |
+| TC-26 | 🌐 Selenium | US#6 | Botón "Ver más" presente | ✅ |
+| TC-27 | 🌐 Selenium | US#6 | Clic en "Ver más" abre lightbox | ✅ |
+| TC-28 | 👁 Manual | US#6 | Layout desktop: imagen izq + grid 2×2 der | ✅ |
+| TC-29 | 👁 Manual | US#6 | Galería responsive en mobile/tablet | ✅ |
+| TC-30 | 🌐 Selenium | US#7 | Footer visible en el home | ✅ |
+| TC-31 | 🌐 Selenium | US#7 | Footer contiene logo, año y copyright | ✅ |
+| TC-32 | 🌐 Selenium | US#7 | Footer visible en página de detalle | ✅ |
+| TC-33 | 👁 Manual | US#7 | Responsividad del footer | ✅ |
+| TC-34 | 🤖 API | US#8 | Metadatos de paginación presentes | ✅ |
+| TC-35 | 🤖 API | US#8 | Paginación con filtro de categoría | ✅ |
+| TC-36 | 👁 Manual | US#8 | Botones Inicio · Anterior · Siguiente | ✅ |
+| TC-37 | 🤖 API | US#9 | Endpoint admin accesible → HTTP 200 | ✅ |
+| TC-38 | 🤖 API | US#9 | Toggle activo/inactivo cambia estado | ✅ |
+| TC-39 | 🤖 API | US#9 | Editar producto actualiza datos | ✅ |
+| TC-40 | 🌐 Selenium | US#9 | URL `/administracion` accesible | ✅ |
+| TC-41 | 🌐 Selenium | US#9 | Botón "Lista de productos" presente | ✅ |
+| TC-42 | 🌐 Selenium | US#9 | Botón "Agregar producto" presente | ✅ |
+| TC-43 | 👁 Manual | US#9 | Panel no disponible en mobile | ✅ |
+| TC-44 | 🤖 API | US#10 | Listado admin paginado con id y nombre | ✅ |
+| TC-45 | 🤖 API | US#10 | Producto creado aparece en listado admin | ✅ |
+| TC-46 | 👁 Manual | US#10 | Columnas Id, Nombre, Acciones visibles | ✅ |
+| TC-47 | 🤖 API | US#11 | Eliminar producto → 204 · GET posterior → 404 | ✅ |
+| TC-48 | 🤖 API | US#11 | Eliminar producto inexistente → 404 | ✅ |
+| TC-49 | 👁 Manual | US#11 | Modal de confirmación al presionar Eliminar | ✅ |
+| TC-50 | 👁 Manual | US#11 | Cancelar eliminación — sin cambios | ✅ |
+
+**Casos de prueba Sprint 2:**
+
+| # | Tipo | US | Caso de prueba | Estado |
+|---|------|----|---------------|--------|
+| TC-S2-01 | 🤖 API | US#12 | Registrar usuario → HTTP 201 · token JWT | ✅ |
+| TC-S2-02 | 🤖 API | US#12 | Email ya registrado → HTTP 409 | ✅ |
+| TC-S2-03 | 🤖 API | US#12 | Campos vacíos → HTTP 400 | ✅ |
+| TC-S2-04 | 🌐 Selenium | US#12 | Formulario de registro accesible en `/register` | ✅ |
+| TC-S2-05 | 🌐 Selenium | US#12 | Registro exitoso muestra pantalla de confirmación | ✅ |
+| TC-S2-06 | 🌐 Selenium | US#12 | Email duplicado muestra mensaje de error | ✅ |
+| TC-S2-07 | 👁 Manual | US#12 | Solo letras en nombre y apellido | ✅ |
+| TC-S2-08 | 🤖 API | US#13 | Login correcto → HTTP 200 · token JWT | ✅ |
+| TC-S2-09 | 🤖 API | US#13 | Contraseña incorrecta → HTTP 401 | ✅ |
+| TC-S2-10 | 🤖 API | US#13 | Email inexistente → HTTP 401 | ✅ |
+| TC-S2-11 | 🌐 Selenium | US#13 | Formulario de login accesible en `/login` | ✅ |
+| TC-S2-12 | 🌐 Selenium | US#13 | Login exitoso redirige al home con nombre en header | ✅ |
+| TC-S2-13 | 🌐 Selenium | US#13 | Login fallido muestra mensaje de error | ✅ |
+| TC-S2-14 | 👁 Manual | US#14 | Usuario autenticado ve su nombre en el header | ✅ |
+| TC-S2-15 | 👁 Manual | US#14 | Sesión persiste tras recargar la página | ✅ |
+| TC-S2-16 | 🌐 Selenium | US#15 | Logout elimina token y estado | ✅ |
+| TC-S2-17 | 👁 Manual | US#15 | Tras logout, rutas protegidas redirigen al login | ✅ |
+| TC-S2-18 | 🤖 API | US#16 | Endpoints admin con rol ADMIN → HTTP 200 | ✅ |
+| TC-S2-19 | 👁 Manual | US#16 | Usuario USER no ve el panel admin | ✅ |
+| TC-S2-20 | 👁 Manual | US#16 | Admin ve tabs: Vuelos · Características · Categorías · Usuarios | ✅ |
+| TC-S2-21 | 🤖 API | US#17 | Crear característica → HTTP 201 · `id`, `name`, `iconName` | ✅ |
+| TC-S2-22 | 🤖 API | US#17 | Editar característica → HTTP 200 · datos actualizados | ✅ |
+| TC-S2-23 | 🤖 API | US#17 | Eliminar característica → HTTP 204 | ✅ |
+| TC-S2-24 | 🤖 API | US#17 | Listar características → array con `name` e `iconName` | ✅ |
+| TC-S2-25 | 👁 Manual | US#17 | Panel admin muestra ícono Lucide correcto | ✅ |
+| TC-S2-26 | 👁 Manual | US#17 | Selector de ícono visual en modal de creación | ✅ |
+| TC-S2-27 | 🤖 API | US#18 | Detalle de vuelo incluye array `characteristics` | ✅ |
+| TC-S2-28 | 🌐 Selenium | US#18 | Sección "Características" visible en `/flights/1` | ✅ |
+| TC-S2-29 | 👁 Manual | US#18 | Íconos Lucide correctos por característica | ✅ |
+| TC-S2-30 | 👁 Manual | US#19 | Email de bienvenida enviado al registrar | ✅ |
+| TC-S2-31 | 👁 Manual | US#19 | Botón "Reenviar correo" en pantalla post-registro | ✅ |
+| TC-S2-32 | 👁 Manual | US#19 | Email no bloquea el registro si falla (`@Async`) | ✅ |
+| TC-S2-33 | 🤖 API | US#20 | Listar categorías activas → `imageUrl`, `flightCount` | ✅ |
+| TC-S2-34 | 🌐 Selenium | US#20 | Tarjetas de categorías con imagen visibles en el home | ✅ |
+| TC-S2-35 | 🌐 Selenium | US#20 | Filtro por categoría actualiza vuelos mostrados | ✅ |
+| TC-S2-36 | 👁 Manual | US#20 | Multi-selección de categorías filtra correctamente | ✅ |
+| TC-S2-37 | 👁 Manual | US#20 | Tarjeta "Todos" restaura el listado completo | ✅ |
+| TC-S2-38 | 🤖 API | US#21 | Crear categoría → HTTP 201 · `id`, `name`, `imageUrl` | ✅ |
+| TC-S2-39 | 🤖 API | US#21 | Editar categoría → HTTP 200 · datos actualizados | ✅ |
+| TC-S2-40 | 🤖 API | US#21 | Eliminar categoría → HTTP 204 | ✅ |
+| TC-S2-41 | 👁 Manual | US#21 | Formulario incluye campo URL de imagen | ✅ |
+| TC-S2-42 | 👁 Manual | US#21 | Imagen de categoría visible en tarjeta del home | ✅ |
 
 ---
 
 ## 👤 Autor
 
-- [@JoshuaSMC](https://github.com/JoshuaSMC) — Roles: TL Frontend · TL Backend · TL BBDD · Scrum Master · UX/UI
+- [@JoshuaSMC](https://github.com/JoshuaSMC) — TL Frontend · TL Backend · TL BBDD · Scrum Master · UX/UI
 
 ---
 
@@ -395,4 +477,4 @@ MIT
 
 ---
 
-*Desarrollado para Digital House — Desafío Profesional · Sprint 1 · 2026*
+*Desarrollado para Digital House — Desafío Profesional · 2026*

@@ -39,6 +39,7 @@ public class CategoryService {
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .iconName(dto.getIconName())
+                .imageUrl(dto.getImageUrl())
                 .build();
         return toDTO(categoryRepository.save(category));
     }
@@ -49,6 +50,7 @@ public class CategoryService {
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         category.setIconName(dto.getIconName());
+        category.setImageUrl(dto.getImageUrl());
         return toDTO(categoryRepository.save(category));
     }
 
@@ -71,6 +73,7 @@ public class CategoryService {
                 .name(c.getName())
                 .description(c.getDescription())
                 .iconName(c.getIconName())
+                .imageUrl(c.getImageUrl())
                 .flightCount(count)
                 .build();
     }

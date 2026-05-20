@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
+import type React from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import {
+  Plane, ArrowLeft, ArrowRight, Users, Timer, Tag,
+  CheckCircle, XCircle, Armchair,
+} from 'lucide-react'
+import CharIcon from '../components/CharIcon'
 import { getFlightById } from '../api/flightApi'
 import type { Flight } from '../types'
 import ImageGallery from '../components/ImageGallery'
@@ -40,7 +46,7 @@ export default function FlightDetailPage() {
   if (error || !flight) {
     return (
       <div className="pt-[68px] min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#F4F7FB' }}>
-        <p className="text-6xl">✈️</p>
+        <Plane className="w-16 h-16 text-navy-300" />
         <p className="text-2xl font-bold text-gray-900">Vuelo no encontrado</p>
         <Link to="/" className="btn-gold mt-2 px-8 py-3">Volver al inicio</Link>
       </div>
@@ -88,9 +94,7 @@ export default function FlightDetailPage() {
               onClick={() => navigate(-1)}
               className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <ArrowLeft className="w-4 h-4" />
               Volver
             </button>
           </div>
@@ -232,40 +236,62 @@ export default function FlightDetailPage() {
               <ImageGallery images={flight.images} flightName={flight.name} />
             </section>
 
+            {/* CARACTERÍSTICAS — US#18 */}
+            {flight.characteristics && flight.characteristics.length > 0 && (
+              <section className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
+                <p className="section-eyebrow mb-4 text-[11px]">Características</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {flight.characteristics.map(c => (
+                    <div
+                      key={c.id}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 border border-gray-100"
+                    >
+                      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-navy-50 flex items-center justify-center">
+                        <CharIcon iconName={c.iconName} className="w-5 h-5 text-navy-600" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-800">{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* DETALLES — 4 chips */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
               <p className="section-eyebrow mb-4 text-[11px]">Detalles del vuelo</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
+                {([
                   {
-                    icon: '🪑',
+                    icon: <Armchair className="w-5 h-5 text-navy-600" />,
                     label: 'Asientos',
                     value: `${flight.availableSeats} disponibles`,
                     highlight: flight.availableSeats < 10,
                   },
                   {
-                    icon: '⏱',
+                    icon: <Timer className="w-5 h-5 text-navy-600" />,
                     label: 'Duración',
                     value: flight.durationMinutes ? formatDuration(flight.durationMinutes) : '—',
                   },
                   {
-                    icon: '🏷',
+                    icon: <Tag className="w-5 h-5 text-navy-600" />,
                     label: 'Categoría',
                     value: flight.category?.name ?? '—',
                   },
                   {
-                    icon: flight.active ? '✅' : '🚫',
+                    icon: flight.active
+                      ? <CheckCircle className="w-5 h-5 text-green-500" />
+                      : <XCircle className="w-5 h-5 text-red-400" />,
                     label: 'Estado',
                     value: flight.active ? 'Disponible' : 'No disponible',
                     valueClass: flight.active ? 'text-green-600' : 'text-red-500',
                   },
-                ].map(item => (
+                ] as { icon: React.ReactNode; label: string; value: string; highlight?: boolean; valueClass?: string }[]).map(item => (
                   <div
                     key={item.label}
-                    className="rounded-xl p-3.5 text-center"
+                    className="rounded-xl p-3.5 text-center flex flex-col items-center"
                     style={{ background: '#F4F7FB' }}
                   >
-                    <p className="text-xl mb-1.5">{item.icon}</p>
+                    <div className="mb-1.5">{item.icon}</div>
                     <p className="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">{item.label}</p>
                     <p className={`font-semibold text-xs ${item.valueClass ?? 'text-navy-900'} ${item.highlight ? 'text-amber-600' : ''}`}>
                       {item.value}
@@ -317,10 +343,7 @@ export default function FlightDetailPage() {
 
                   {/* Asientos */}
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3 mb-4" style={{ background: '#F4F7FB' }}>
-                    <svg className="w-5 h-5 text-gold-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                    <Users className="w-5 h-5 text-gold-500 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] text-gray-400 leading-none mb-0.5">Asientos disponibles</p>
                       <p className="text-sm font-bold text-gray-900">{flight.availableSeats} plazas</p>
@@ -334,20 +357,14 @@ export default function FlightDetailPage() {
                     style={!flight.active ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
                   >
                     {flight.active ? 'Reservar ahora' : 'No disponible'}
-                    {flight.active && (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    )}
+                    {flight.active && <ArrowRight className="w-4 h-4" />}
                   </button>
 
                   <button
                     onClick={() => navigate(-1)}
                     className="w-full mt-2.5 py-2.5 text-sm text-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
+                    <ArrowLeft className="w-4 h-4" />
                     Volver a resultados
                   </button>
                 </div>

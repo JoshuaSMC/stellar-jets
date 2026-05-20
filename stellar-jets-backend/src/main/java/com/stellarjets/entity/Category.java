@@ -29,6 +29,9 @@ public class Category {
     @Column(name = "icon_name", length = 50)
     private String iconName;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Flight> flights;
 }

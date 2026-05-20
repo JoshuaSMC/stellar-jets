@@ -75,6 +75,15 @@ public class Flight {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "flight_characteristics",
+        joinColumns = @JoinColumn(name = "flight_id"),
+        inverseJoinColumns = @JoinColumn(name = "characteristic_id")
+    )
+    @Builder.Default
+    private List<Characteristic> characteristics = new ArrayList<>();
+
     @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<FlightImage> images = new ArrayList<>();

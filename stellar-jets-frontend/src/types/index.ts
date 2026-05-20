@@ -9,6 +9,7 @@ export interface Category {
   name: string
   description: string
   iconName: string
+  imageUrl?: string
   flightCount: number
 }
 
@@ -33,6 +34,7 @@ export interface Flight {
   active: boolean
   category: Category | null
   images: FlightImage[]
+  characteristics: Characteristic[]
   coverImageUrl: string | null
 }
 
@@ -44,6 +46,12 @@ export interface PagedResponse<T> {
   pageSize: number
   first: boolean
   last: boolean
+}
+
+export interface Characteristic {
+  id: number
+  name: string
+  iconName: string
 }
 
 export interface AirportRequest {
@@ -63,5 +71,36 @@ export interface FlightRequest {
   durationMinutes?: number
   rating: number
   categoryId: number | null
+  characteristicIds: number[]
   imageUrls: string[]
+}
+
+export interface AuthUser {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  role: 'USER' | 'ADMIN'
+  token: string
+}
+
+export interface RegisterRequest {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface AdminUser {
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  role: string
+  active: boolean
 }
