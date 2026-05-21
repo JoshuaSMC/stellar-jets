@@ -24,6 +24,7 @@ public class FlightDTO {
     private CategoryDTO category;
     private List<FlightImageDTO> images;
     private List<CharacteristicDTO> characteristics;
+    private int reviewCount;
 
     /** URL de portada calculada, null-safe. Útil para tarjetas en listados. */
     public String getCoverImageUrl() {

@@ -117,10 +117,11 @@
 ───────────────────────────────────────────── */
 .hero-section {
   position: relative;
-  min-height: 90vh;
+  min-height: 78vh;
   display: flex;
   align-items: center;
   overflow: hidden;
+  padding-bottom: 5rem;
 }
 .hero-bg {
   position: absolute; inset: 0;
@@ -140,31 +141,40 @@
   );
 }
 
-/* Widget de búsqueda */
-.search-widget {
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(22px) saturate(1.6);
-  -webkit-backdrop-filter: blur(22px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 18px;
-  padding: 20px 24px;
+/* Search bar — Qatar style (blanca, solapada) */
+.search-bar {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(6, 14, 26, 0.18), 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid #f0f0f0;
+  overflow: visible;
 }
-.search-widget input {
+.search-bar-field {
+  flex: 1;
+  padding: 18px 20px 16px;
+  border-right: 1px solid #f0f2f5;
+  min-width: 0;
+}
+.search-bar-field:last-of-type { border-right: none; }
+.search-bar-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  display: block;
+}
+.search-bar-input {
   width: 100%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 10px;
-  padding: 14px 16px 14px 48px;
-  color: #fff;
-  font-size: 0.95rem;
+  background: transparent;
+  border: none;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #0A1428;
 }
-.search-widget input::placeholder { color: rgba(255,255,255,0.45); }
-.search-widget input:focus {
-  border-color: #D4AF37;
-  background: rgba(255,255,255,0.18);
-}
+.search-bar-input::placeholder { color: #c0cad6; }
 
 /* ─────────────────────────────────────────────
    HEADER glassmorphism al hacer scroll
@@ -328,4 +338,13 @@
   width: 24px; height: 1.5px;
   background: #D4AF37;
   border-radius: 2px;
+}
+
+/* Occupied dates modifier for react-day-picker (US#23) */
+.rdp-day--occupied button,
+.rdp-day--occupied {
+  background-color: transparent !important;
+  color: #ef4444 !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
 }

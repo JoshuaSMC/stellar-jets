@@ -3,7 +3,9 @@ package com.stellarjets.ui.pages;
 import io.qameta.allure.Step;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -27,7 +29,8 @@ public class LoginPage extends BasePage {
         open();
         fillCredentials(email, password);
         submit();
-        wait.until(ExpectedConditions.urlToBe(base + "/"));
+        new WebDriverWait(driver, Duration.ofSeconds(30))
+                .until(ExpectedConditions.urlToBe(base + "/"));
     }
 
     @Step("Intentar login con credenciales incorrectas")

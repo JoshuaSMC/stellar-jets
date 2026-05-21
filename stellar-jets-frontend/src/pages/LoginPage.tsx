@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = (location.state as { from?: string; requiresAuth?: boolean } | null)?.from ?? '/'
+  const requiresAuth = (location.state as { requiresAuth?: boolean } | null)?.requiresAuth ?? false
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +19,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(form)
-      navigate('/')
+      navigate(from, { replace: true })
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
       setError(msg ?? 'Credenciales inválidas. Revisá tu correo y contraseña.')
@@ -43,6 +46,19 @@ export default function LoginPage() {
             </h1>
             <p className="text-white/50 text-sm mt-2">Iniciá sesión en tu cuenta</p>
           </div>
+
+          {/* Banner login obligatorio — US#30 */}
+          {requiresAuth && (
+            <div className="px-8 py-4 border-b border-amber-100" style={{ background: '#fffbeb' }}>
+              <p className="text-sm font-semibold text-amber-800 mb-0.5">Iniciá sesión para continuar</p>
+              <p className="text-xs text-amber-700">
+                Para completar tu reserva es necesario estar registrado.{' '}
+                <Link to="/register" state={{ from }} className="underline font-medium hover:text-amber-900">
+                  ¿No tenés cuenta? Registrate aquí.
+                </Link>
+              </p>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-8 py-7 space-y-4">

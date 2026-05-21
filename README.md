@@ -189,8 +189,10 @@ Desde Swagger UI podés:
 |---------|------|-------|
 | `Sprint1ControllerTest.java` | API | 18 — US#3 al US#11 |
 | `Sprint2ControllerTest.java` | API | 28 — US#12 al US#21 |
+| `Sprint3ControllerTest.java` | API | 26 — US#22 al US#29 |
 | `Sprint1UITest.java` | UI Selenium | 20 — US#1 al US#11 |
 | `Sprint2UITest.java` | UI Selenium | 22 — US#12 al US#21 |
+| `Sprint3UITest.java` | UI Selenium | 23 — US#22 al US#29 |
 
 **Page Object Model** — cada página tiene su clase en `ui/pages/`:
 `BasePage` · `HomePage` · `LoginPage` · `RegisterPage` · `FlightDetailPage` · `AdminPanelPage`
@@ -207,10 +209,13 @@ Desde Swagger UI podés:
 **Tests de API** (sin servidores):
 ```bash
 cd stellar-jets-backend
-mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest"
+mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest,Sprint3ControllerTest"
 ```
 
 **Tests de UI con Selenium** (3 terminales):
+
+> Los tests de UI se ejecutan por separado por sprint para garantizar el aislamiento entre suites y evitar interferencias de carga en el backend.
+
 ```bash
 # Terminal 1 — backend:
 cd stellar-jets-backend
@@ -220,9 +225,11 @@ MAIL_USERNAME=test MAIL_PASSWORD=test mvn spring-boot:run
 cd stellar-jets-frontend
 npm run dev
 
-# Terminal 3 — tests UI:
+# Terminal 3 — tests UI (ejecutar uno por vez):
 cd stellar-jets-backend
-mvn test -Dtest="Sprint1UITest,Sprint2UITest"
+mvn test -Dtest="Sprint1UITest"
+mvn test -Dtest="Sprint2UITest"
+mvn test -Dtest="Sprint3UITest"
 ```
 
 **Todos los tests:**
@@ -246,6 +253,7 @@ mvn allure:serve -Dallure.serve.port=5050
 |-------|-----|-------------|--------|-------|
 | Sprint 1 | 18 ✅ | 20 ✅ | 12 ✅ | **50 / 50** |
 | Sprint 2 | 28 ✅ | 22 ✅ | 12 ✅ | **62 / 62** |
+| Sprint 3 | 26 ✅ | 23 ✅ | 16 ✅ | **65 / 65** |
 
 ---
 
@@ -290,7 +298,7 @@ mvn allure:serve -Dallure.serve.port=5050
 
 **Logo:**
 ```
-  ✈  STELLAR JETS
+     STELLAR JETS
      PREMIUM AVIATION
 ```
 - Tipografía: Cinzel 700 — serif romana uppercase
@@ -316,48 +324,7 @@ mvn allure:serve -Dallure.serve.port=5050
 | Display | Cinzel | 700 |
 | Cuerpo | Inter | 300–700 |
 
----
-
-### Sprint 2
-
-#### Entregable 01 — Documentación / Bitácora
-
-**Definición del proyecto:**
-Continuación del Sprint 1. El alcance del Sprint 2 agrega autenticación completa con JWT (registro, login, logout, roles), gestión de características por vuelo con íconos Lucide, sección de categorías con imágenes, filtro multi-categoría y notificación por email al registrarse.
-
-**Rol: Scrum Master**
-
-| Ítem | Detalle |
-|------|---------|
-| **Metodología** | Scrum — iteraciones por sprint |
-| **Sprint** | Sprint 2 |
-| **Meta del sprint** | Autenticación JWT · Características · Categorías con imagen · Notificación email |
-| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
-| **Herramientas** | GitHub · Maven · Vite · Spring Security · Mailtrap (sandbox SMTP) |
-
-**Bitácora:**
-
-| Iteración | Actividad | Estado |
-|-----------|-----------|--------|
-| 1 | Spring Security + JWT stateless | ✅ |
-| 2 | Endpoints `/api/auth/register` y `/api/auth/login` | ✅ |
-| 3 | Entidad `User` con roles USER / ADMIN, BCrypt | ✅ |
-| 4 | Página de registro con validación (solo letras en nombre) | ✅ |
-| 5 | Página de login con persistencia de sesión | ✅ |
-| 6 | Logout — limpieza del token JWT en localStorage | ✅ |
-| 7 | Protección de rutas admin con rol ADMIN | ✅ |
-| 8 | CRUD de características con ícono Lucide | ✅ |
-| 9 | Asociación características ↔ vuelos desde admin | ✅ |
-| 10 | Componente `CharIcon` compartido | ✅ |
-| 11 | Notificación por email (`@Async`, Mailtrap sandbox) | ✅ |
-| 12 | Pantalla post-registro con reenvío de confirmación | ✅ |
-| 13 | Tarjetas de categorías con imagen en el home | ✅ |
-| 14 | Filtro multi-categoría con selección visual | ✅ |
-| 15 | CRUD de categorías con URL de imagen desde admin | ✅ |
-
-**US completadas:** US#12 · US#13 · US#14 · US#15 · US#16 · US#17 · US#18 · US#19 · US#20 · US#21 ✅
-
-#### Entregable 02 — Planificación y Ejecución de Tests
+#### Entregable 03 — Planificación y Ejecución de Tests
 
 Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecución y resultados.
 
@@ -416,6 +383,51 @@ Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecució
 | TC-49 | 👁 Manual | US#11 | Modal de confirmación al presionar Eliminar | ✅ |
 | TC-50 | 👁 Manual | US#11 | Cancelar eliminación — sin cambios | ✅ |
 
+---
+
+### Sprint 2
+
+#### Entregable 01 — Documentación / Bitácora
+
+**Definición del proyecto:**
+Continuación del Sprint 1. El alcance del Sprint 2 agrega autenticación completa con JWT (registro, login, logout, roles), gestión de características por vuelo con íconos Lucide, sección de categorías con imágenes, filtro multi-categoría y notificación por email al registrarse.
+
+**Rol: Scrum Master**
+
+| Ítem | Detalle |
+|------|---------|
+| **Metodología** | Scrum — iteraciones por sprint |
+| **Sprint** | Sprint 2 |
+| **Meta del sprint** | Autenticación JWT · Características · Categorías con imagen · Notificación email |
+| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
+| **Herramientas** | GitHub · Maven · Vite · Spring Security · Mailtrap (sandbox SMTP) |
+
+**Bitácora:**
+
+| Iteración | Actividad | Estado |
+|-----------|-----------|--------|
+| 1 | Spring Security + JWT stateless | ✅ |
+| 2 | Endpoints `/api/auth/register` y `/api/auth/login` | ✅ |
+| 3 | Entidad `User` con roles USER / ADMIN, BCrypt | ✅ |
+| 4 | Página de registro con validación (solo letras en nombre) | ✅ |
+| 5 | Página de login con persistencia de sesión | ✅ |
+| 6 | Logout — limpieza del token JWT en localStorage | ✅ |
+| 7 | Protección de rutas admin con rol ADMIN | ✅ |
+| 8 | CRUD de características con ícono Lucide | ✅ |
+| 9 | Asociación características ↔ vuelos desde admin | ✅ |
+| 10 | Componente `CharIcon` compartido | ✅ |
+| 11 | Notificación por email (`@Async`, Mailtrap sandbox) | ✅ |
+| 12 | Pantalla post-registro con reenvío de confirmación | ✅ |
+| 13 | Tarjetas de categorías con imagen en el home | ✅ |
+| 14 | Filtro multi-categoría con selección visual | ✅ |
+| 15 | CRUD de categorías con URL de imagen desde admin | ✅ |
+
+**US completadas:** US#12 · US#13 · US#14 · US#15 · US#16 · US#17 · US#18 · US#19 · US#20 · US#21 ✅
+
+#### Entregable 02 — Planificación y Ejecución de Tests
+
+Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecución y resultados.
+
 **Casos de prueba Sprint 2:**
 
 | # | Tipo | US | Caso de prueba | Estado |
@@ -462,6 +474,121 @@ Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecució
 | TC-S2-40 | 🤖 API | US#21 | Eliminar categoría → HTTP 204 | ✅ |
 | TC-S2-41 | 👁 Manual | US#21 | Formulario incluye campo URL de imagen | ✅ |
 | TC-S2-42 | 👁 Manual | US#21 | Imagen de categoría visible en tarjeta del home | ✅ |
+
+---
+
+### Sprint 3
+
+#### Entregable 01 — Documentación / Bitácora
+
+**Definición del proyecto:**
+Continuación del Sprint 2. El alcance del Sprint 3 agrega buscador con selector de fechas, calendario de disponibilidad en el detalle del producto, sistema de favoritos persistente, bloque de políticas, compartir en redes sociales, sistema de puntaje/reseñas y eliminación de categorías con modal de confirmación.
+
+**Rol: Scrum Master**
+
+| Ítem | Detalle |
+|------|---------|
+| **Metodología** | Scrum — iteraciones por sprint |
+| **Sprint** | Sprint 3 |
+| **Meta del sprint** | Búsqueda con fechas · Disponibilidad · Favoritos · Políticas · Compartir · Reseñas · Eliminar categoría |
+| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
+| **Herramientas** | GitHub · Maven · Vite · react-day-picker · Spring Security |
+
+**Bitácora:**
+
+| Iteración | Actividad | Estado |
+|-----------|-----------|--------|
+| 1 | Buscador con doble selector de fechas (react-day-picker v10) | ✅ |
+| 2 | Endpoint `/api/flights/search` con parámetros checkIn/checkOut | ✅ |
+| 3 | Entidad `Reservation` + endpoint `/api/reservations/{id}/occupied-dates` | ✅ |
+| 4 | Calendario de disponibilidad en el detalle del vuelo | ✅ |
+| 5 | Entidad `Favorite` + endpoints POST/DELETE/GET `/api/favorites` | ✅ |
+| 6 | Ícono de corazón en tarjetas con toggle optimista | ✅ |
+| 7 | Página `/favorites` con lista de vuelos favoritos | ✅ |
+| 8 | Bloque de políticas en el detalle del vuelo | ✅ |
+| 9 | Modal de compartir con Facebook · Twitter · WhatsApp · Instagram | ✅ |
+| 10 | Entidad `Review` + endpoints POST/GET `/api/reviews/{flightId}` | ✅ |
+| 11 | Sección de reseñas y puntaje en el detalle del vuelo | ✅ |
+| 12 | Actualización automática del rating promedio al agregar reseña | ✅ |
+| 13 | Modal de confirmación para eliminar categoría en el panel admin | ✅ |
+| 14 | Nullificación de FK en vuelos al eliminar su categoría | ✅ |
+| 15 | Dependencia `spring-security-test` para tests con `@WithMockUser` | ✅ |
+
+**US completadas:** US#22 · US#23 · US#24 · US#25 · US#26 · US#27 · US#28 · US#29 ✅
+
+#### Entregable 02 — Planificación y Ejecución de Tests
+
+Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecución y resultados.
+
+**Casos de prueba Sprint 3:**
+
+| # | Tipo | US | Caso de prueba | Estado |
+|---|------|----|---------------|--------|
+| TC-S3-01 | 🤖 API | US#22 | Búsqueda por nombre devuelve vuelos que coinciden | ✅ |
+| TC-S3-02 | 🤖 API | US#22 | Búsqueda por código IATA devuelve vuelos que coinciden | ✅ |
+| TC-S3-03 | 🤖 API | US#22 | Búsqueda con fechas lejanas libres devuelve vuelos | ✅ |
+| TC-S3-04 | 🤖 API | US#22 | Búsqueda combinada (query + fechas) devuelve paginado correcto | ✅ |
+| TC-S3-05 | 🤖 API | US#22 | Búsqueda vacía devuelve todos los vuelos activos | ✅ |
+| TC-S3-06 | 🤖 API | US#22 | Endpoint recomendados devuelve array con rating | ✅ |
+| TC-S3-07 | 🤖 API | US#23 | Vuelo con reservas devuelve rangos de fechas ocupadas | ✅ |
+| TC-S3-08 | 🤖 API | US#23 | Vuelo sin reservas devuelve lista vacía de fechas ocupadas | ✅ |
+| TC-S3-09 | 🤖 API | US#23 | Fechas ocupadas tienen formato ISO (checkIn, checkOut) | ✅ |
+| TC-S3-10 | 🤖 API | US#24 | Agregar vuelo a favoritos: devuelve 200 | ✅ |
+| TC-S3-11 | 🤖 API | US#24 | Agregar vuelo duplicado a favoritos es idempotente | ✅ |
+| TC-S3-12 | 🤖 API | US#24 | Eliminar vuelo de favoritos: devuelve 204 | ✅ |
+| TC-S3-13 | 🤖 API | US#24 | Agregar vuelo inexistente a favoritos: devuelve 404 | ✅ |
+| TC-S3-14 | 🤖 API | US#25 | Listar favoritos vacíos: devuelve array vacío | ✅ |
+| TC-S3-15 | 🤖 API | US#25 | Favorito aparece en lista tras agregar: contiene FlightDTO | ✅ |
+| TC-S3-16 | 🤖 API | US#25 | Favorito desaparece de lista tras eliminar | ✅ |
+| TC-S3-17 | 🤖 API | US#28 | Listar reseñas de vuelo: devuelve array | ✅ |
+| TC-S3-18 | 🤖 API | US#28 | Crear reseña (5 estrellas): devuelve 200 con datos | ✅ |
+| TC-S3-19 | 🤖 API | US#28 | Reseña con estrellas fuera de rango (6): devuelve 400 | ✅ |
+| TC-S3-20 | 🤖 API | US#28 | Reseña creada aparece en el listado con stars y firstName | ✅ |
+| TC-S3-21 | 🤖 API | US#28 | Rating del vuelo se actualiza tras agregar reseña | ✅ |
+| TC-S3-22 | 🤖 API | US#28 | Reseña existente se actualiza con addOrUpdate (upsert) | ✅ |
+| TC-S3-23 | 🤖 API | US#29 | Eliminar categoría existente: devuelve 204 | ✅ |
+| TC-S3-24 | 🤖 API | US#29 | Vuelos de categoría eliminada mantienen campo category nulo | ✅ |
+| TC-S3-25 | 🤖 API | US#29 | Eliminar categoría inexistente: devuelve 404 | ✅ |
+| TC-S3-26 | 🤖 API | US#29 | Categoría eliminada no aparece en listado público | ✅ |
+| TC-UI-S3-01 | 🌐 Selenium | US#22 | Buscador con campo de texto visible en el home | ✅ |
+| TC-UI-S3-02 | 🌐 Selenium | US#22 | Botón de búsqueda presente en el buscador del home | ✅ |
+| TC-UI-S3-03 | 🌐 Selenium | US#22 | Búsqueda por nombre filtra y muestra resultados | ✅ |
+| TC-UI-S3-04 | 🌐 Selenium | US#22 | Sección de categorías se mantiene visible con búsqueda activa | ✅ |
+| TC-UI-S3-05 | 🌐 Selenium | US#23 | Calendario de disponibilidad visible en detalle del vuelo | ✅ |
+| TC-UI-S3-06 | 🌐 Selenium | US#23 | Calendario muestra el nombre del mes actual | ✅ |
+| TC-UI-S3-07 | 🌐 Selenium | US#24 | Ícono de favorito visible en tarjetas con usuario autenticado | ✅ |
+| TC-UI-S3-08 | 🌐 Selenium | US#24 | Botón de favorito presente en el detalle del vuelo | ✅ |
+| TC-UI-S3-09 | 🌐 Selenium | US#24 | Usuario anónimo ve el home sin acceso a favoritos directos | ✅ |
+| TC-UI-S3-10 | 🌐 Selenium | US#25 | Sección de favoritos accesible desde cuenta de usuario | ✅ |
+| TC-UI-S3-11 | 🌐 Selenium | US#25 | Lista de favoritos muestra vuelos previamente marcados | ✅ |
+| TC-UI-S3-12 | 🌐 Selenium | US#26 | Sección de políticas visible en el detalle del vuelo | ✅ |
+| TC-UI-S3-13 | 🌐 Selenium | US#26 | Bloque de políticas tiene título identificable | ✅ |
+| TC-UI-S3-14 | 🌐 Selenium | US#26 | Bloque de políticas ocupa el ancho del contenedor | ✅ |
+| TC-UI-S3-15 | 🌐 Selenium | US#27 | Botón de compartir visible en el detalle del vuelo | ✅ |
+| TC-UI-S3-16 | 🌐 Selenium | US#27 | Clic en compartir abre modal o menú con redes sociales | ✅ |
+| TC-UI-S3-17 | 🌐 Selenium | US#28 | Sección de reseñas visible en el detalle del vuelo | ✅ |
+| TC-UI-S3-18 | 🌐 Selenium | US#28 | Usuario autenticado ve el formulario de calificación | ✅ |
+| TC-UI-S3-19 | 🌐 Selenium | US#28 | Rating numérico del vuelo visible en el detalle | ✅ |
+| TC-UI-S3-20 | 🌐 Selenium | US#29 | Botón eliminar presente en la tabla de categorías del admin | ✅ |
+| TC-UI-S3-21 | 🌐 Selenium | US#29 | Clic en eliminar abre modal de confirmación | ✅ |
+| TC-UI-S3-22 | 🌐 Selenium | US#29 | Modal de confirmación muestra el nombre de la categoría | ✅ |
+| TC-UI-S3-23 | 🌐 Selenium | US#29 | Cancelar en el modal preserva la categoría sin cambios | ✅ |
+| TC-MAN-S3-01 | 👁 Manual | US#22 | Autocompletado/sugerencias al escribir en el buscador | ✅ |
+| TC-MAN-S3-02 | 👁 Manual | US#22 | Selector de fechas tiene doble calendario (ida y vuelta) | ✅ |
+| TC-MAN-S3-03 | 👁 Manual | US#22 | Fechas no seleccionables en el pasado | ✅ |
+| TC-MAN-S3-04 | 👁 Manual | US#23 | Fechas ocupadas resaltadas en rojo/gris en el calendario | ✅ |
+| TC-MAN-S3-05 | 👁 Manual | US#23 | Rango checkIn–checkOut completamente bloqueado | ✅ |
+| TC-MAN-S3-06 | 👁 Manual | US#24 | Corazón relleno / vacío según estado de favorito | ✅ |
+| TC-MAN-S3-07 | 👁 Manual | US#24 | Favorito persiste tras recargar la página | ✅ |
+| TC-MAN-S3-08 | 👁 Manual | US#25 | Favorito aparece inmediatamente en /favorites (tiempo real) | ✅ |
+| TC-MAN-S3-09 | 👁 Manual | US#25 | Eliminar favorito desde /favorites lo quita del listado | ✅ |
+| TC-MAN-S3-10 | 👁 Manual | US#26 | Políticas en columnas (layout multi-columna) | ✅ |
+| TC-MAN-S3-11 | 👁 Manual | US#26 | Título de la sección de políticas subrayado o destacado | ✅ |
+| TC-MAN-S3-12 | 👁 Manual | US#27 | Modal compartir incluye imagen, descripción y link del vuelo | ✅ |
+| TC-MAN-S3-13 | 👁 Manual | US#27 | Clic en Facebook abre URL de Facebook sharer | ✅ |
+| TC-MAN-S3-14 | 👁 Manual | US#27 | Clic en Twitter/X abre URL de Twitter intent | ✅ |
+| TC-MAN-S3-15 | 👁 Manual | US#28 | Estrellas interactivas — hover muestra valor antes de confirmar | ✅ |
+| TC-MAN-S3-16 | 👁 Manual | US#28 | Score promedio se muestra en listado con reviewCount | ✅ |
 
 ---
 

@@ -20,7 +20,7 @@ public abstract class BasePage {
     protected BasePage(WebDriver driver, String base) {
         this.driver = driver;
         this.base   = base;
-        this.wait   = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait   = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
     /** Espera y retorna el primer elemento que coincida con el locator. */

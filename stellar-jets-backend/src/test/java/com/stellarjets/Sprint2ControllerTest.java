@@ -64,7 +64,7 @@ class Sprint2ControllerTest {
     private CategoryDTO buildCategory(String name) {
         return CategoryDTO.builder()
                 .name(name).description("Descripción de " + name)
-                .iconName("star").imageUrl("https://example.com/img.jpg")
+                .imageUrl("https://example.com/img.jpg")
                 .build();
     }
 

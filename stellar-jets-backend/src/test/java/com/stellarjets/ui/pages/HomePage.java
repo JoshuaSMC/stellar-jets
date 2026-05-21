@@ -94,6 +94,41 @@ public class HomePage extends BasePage {
         return $$(By.xpath(xp.toString()));
     }
 
+    // ── Búsqueda con fechas (US#22) ───────────────────────────────────────────
+
+    public boolean hasSearchButton() {
+        String t = mainText();
+        return t.contains("buscar") || t.contains("búsqueda")
+            || !$$(By.xpath("//button[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'buscar')]")).isEmpty();
+    }
+
+    @Step("Ejecutar búsqueda por texto")
+    public void searchByText(String query) {
+        List<WebElement> inputs = $$(By.cssSelector("input[type='text'], input[type='search']"));
+        if (!inputs.isEmpty()) {
+            inputs.get(0).clear();
+            inputs.get(0).sendKeys(query);
+        }
+        List<WebElement> btns = $$(By.xpath(
+            "//button[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'buscar')]"));
+        if (!btns.isEmpty()) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btns.get(0));
+        }
+        try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+    }
+
+    public boolean hasFlightCardsWithText(String text) {
+        return getFlightCards().stream().anyMatch(c ->
+            c.getText().toLowerCase().contains(text.toLowerCase()));
+    }
+
+    // ── Favoritos en home (US#24) ─────────────────────────────────────────────
+
+    public boolean hasHeartIconsOnCards() {
+        return !$$(By.cssSelector(
+            "a[href*='/flights/'] button svg, a[href*='/flights/'] [class*='heart']")).isEmpty();
+    }
+
     // ── Footer ────────────────────────────────────────────────────────────────
 
     public boolean isFooterVisible() {

@@ -86,6 +86,68 @@ public class AdminPanelPage extends BasePage {
         return t.contains("lujo") || t.contains("aventura") || t.contains("negocios");
     }
 
+    // ── Eliminar categoría (US#29) ────────────────────────────────────────────
+
+    // El botón de eliminar categoría es un ícono Trash2 con title="Eliminar" (sin texto visible)
+    public boolean hasDeleteButtonInCategories() {
+        goToCategories();
+        return !$$(By.cssSelector("button[title='Eliminar']")).isEmpty();
+    }
+
+    @Step("Clic en botón Eliminar de la primera categoría")
+    public void clickDeleteFirstCategory() {
+        goToCategories();
+        List<WebElement> btns = $$(By.cssSelector("button[title='Eliminar']"));
+        if (!btns.isEmpty()) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", btns.get(0));
+            try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btns.get(0));
+            try { Thread.sleep(600); } catch (InterruptedException ignored) {}
+        }
+    }
+
+    // El modal React muestra el texto "Eliminar categor" y "Confirmar eliminación"
+    public boolean hasConfirmationModal() {
+        String t = driver.findElement(By.tagName("body")).getText();
+        return t.contains("Eliminar categor") || t.contains("Confirmar eliminaci");
+    }
+
+    public boolean modalShowsCategoryName() {
+        String t = driver.findElement(By.tagName("body")).getText();
+        return t.contains("Lujo") || t.contains("Aventura") || t.contains("Negocios") || t.contains("Familia");
+    }
+
+    @Step("Clic en Cancelar en el modal de confirmación")
+    public void clickCancelInModal() {
+        // JS click: evita ElementClickIntercepted si el overlay cubre el botón
+        List<WebElement> cancel = $$(By.xpath("//button[text()='Cancelar']"));
+        if (!cancel.isEmpty()) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", cancel.get(0));
+        }
+        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+    }
+
+    @Step("Clic en Confirmar eliminación en el modal")
+    public void clickConfirmInModal() {
+        List<WebElement> confirm = $$(By.xpath("//button[contains(text(),'Confirmar eliminaci')]"));
+        if (!confirm.isEmpty()) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", confirm.get(0));
+        }
+        try { Thread.sleep(800); } catch (InterruptedException ignored) {}
+    }
+
+    public int countCategoryRows() {
+        goToCategories();
+        return $$(By.cssSelector("table tbody tr, [data-testid='category-row']")).size();
+    }
+
+    // ── Favoritos (US#25) ─────────────────────────────────────────────────────
+
+    public boolean hasFavoritesSection() {
+        String t = mainText();
+        return t.contains("favorito") || t.contains("mis vuelos");
+    }
+
     // ── Avatar / Logout ───────────────────────────────────────────────────────
 
     @Step("Abrir dropdown del avatar para logout")

@@ -6,6 +6,7 @@ import org.springframework.http.*;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,6 +50,15 @@ public class GlobalExceptionHandler {
         String msg = "Ya existe un vuelo con ese nombre o código de vuelo.";
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(buildError(HttpStatus.CONFLICT, msg, request));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(
+            ResponseStatusException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status)
+                .body(buildError(status, ex.getReason(), request));
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import type { Flight } from '../types'
+import { useAuth } from '../context/AuthContext'
+import { useFavorites } from '../context/FavoritesContext'
 
 function formatDuration(minutes: number | null): string {
   if (!minutes) return ''
@@ -14,6 +17,10 @@ interface Props {
 }
 
 export default function FlightCard({ flight, featured = false }: Props) {
+  const { user } = useAuth()
+  const { isFavorite, toggle } = useFavorites()
+  const fav = isFavorite(flight.id)
+
   const cover =
     flight.coverImageUrl ??
     flight.images?.find(i => i.cover)?.url ??
@@ -61,11 +68,32 @@ export default function FlightCard({ flight, featured = false }: Props) {
             </span>
           )}
         </div>
-        {!flight.active && (
-          <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-red-600/85 text-white leading-none">
-            No disponible
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {!flight.active && (
+            <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-red-600/85 text-white leading-none">
+              No disponible
+            </span>
+          )}
+          {user && (
+            <button
+              type="button"
+              onClick={e => { e.preventDefault(); e.stopPropagation(); toggle(flight) }}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+              style={{
+                background: fav ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.35)',
+                backdropFilter: 'blur(4px)',
+              }}
+              aria-label={fav ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <Heart
+                className="w-4 h-4 transition-all"
+                fill={fav ? '#fff' : 'none'}
+                stroke={fav ? '#fff' : 'rgba(255,255,255,0.85)'}
+                strokeWidth={2}
+              />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Info inferior — superpuesta sobre el degradado */}
@@ -110,17 +138,22 @@ export default function FlightCard({ flight, featured = false }: Props) {
             </p>
           </div>
 
-          <div className="flex gap-px">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <svg
-                key={i}
-                className={`w-3 h-3 flex-shrink-0 ${i < stars ? 'text-gold-400' : 'text-white/15'}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.372 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118L10 14.347l-3.952 2.878c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.784-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
-              </svg>
-            ))}
+          <div className="flex flex-col items-end gap-0.5">
+            <div className="flex gap-px">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <svg
+                  key={i}
+                  className={`w-3 h-3 flex-shrink-0 ${i < stars ? 'text-gold-400' : 'text-white/15'}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.372 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118L10 14.347l-3.952 2.878c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.784-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+                </svg>
+              ))}
+            </div>
+            {flight.reviewCount > 0 && (
+              <span className="text-[9px] text-white/40">{flight.reviewCount} reseñas</span>
+            )}
           </div>
         </div>
 

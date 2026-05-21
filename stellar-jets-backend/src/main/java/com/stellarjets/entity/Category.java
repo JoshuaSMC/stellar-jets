@@ -25,10 +25,6 @@ public class Category {
     @Column(length = 255)
     private String description;
 
-    /** Nombre del icono (ej: "plane", "star", "globe") para el frontend */
-    @Column(name = "icon_name", length = 50)
-    private String iconName;
-
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 

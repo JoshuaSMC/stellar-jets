@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -30,13 +31,22 @@ public class FlightService {
         return toPagedResponse(flightRepository.findByActiveTrue(pageable));
     }
 
-    public PagedResponseDTO<FlightDTO> search(String query, List<Long> categoryIds, int page, int size) {
+    public PagedResponseDTO<FlightDTO> search(String query, List<Long> categoryIds,
+                                               LocalDate checkIn, LocalDate checkOut,
+                                               int page, int size) {
         Page<Flight> result;
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        boolean hasDates  = checkIn != null && checkOut != null;
+        boolean hasQuery  = StringUtils.hasText(query);
+        boolean hasCats   = categoryIds != null && !categoryIds.isEmpty();
 
-        if (StringUtils.hasText(query)) {
+        if (hasDates && hasQuery) {
+            result = flightRepository.searchActiveInDateRange(query.trim(), checkIn, checkOut, pageable);
+        } else if (hasDates) {
+            result = flightRepository.findAvailableInDateRange(checkIn, checkOut, pageable);
+        } else if (hasQuery) {
             result = flightRepository.searchActive(query.trim(), pageable);
-        } else if (categoryIds != null && !categoryIds.isEmpty()) {
+        } else if (hasCats) {
             result = categoryIds.size() == 1
                     ? flightRepository.findByActiveTrueAndCategoryId(categoryIds.get(0), pageable)
                     : flightRepository.findByActiveTrueAndCategoryIdIn(categoryIds, pageable);
@@ -199,6 +209,7 @@ public class FlightService {
                 .images(images)
                 .characteristics(f.getCharacteristics() == null ? List.of()
                         : f.getCharacteristics().stream().map(characteristicService::toDTO).toList())
+                .reviewCount(f.getReviewCount())
                 .build();
     }
 

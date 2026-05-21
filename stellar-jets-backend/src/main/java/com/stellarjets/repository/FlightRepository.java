@@ -7,8 +7,13 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long> {
+
+    List<Flight> findByCategoryId(Long categoryId);
 
     Page<Flight> findByActiveTrue(Pageable pageable);
 
@@ -25,7 +30,6 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
     @Query("SELECT f FROM Flight f WHERE f.active = true AND f.category.id IN :categoryIds")
     Page<Flight> findByActiveTrueAndCategoryIdIn(@Param("categoryIds") java.util.List<Long> categoryIds, Pageable pageable);
 
-    /** Búsqueda en nombre, ciudad/IATA de origen y destino */
     @Query("""
             SELECT f FROM Flight f
             WHERE f.active = true
@@ -37,13 +41,43 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
             """)
     Page<Flight> searchActive(@Param("q") String query, Pageable pageable);
 
-    /** Vuelos activos en orden aleatorio (ORDER BY RAND() — soportado en H2) */
     @Query(value = "SELECT * FROM flights WHERE active = true ORDER BY RAND()",
            countQuery = "SELECT COUNT(*) FROM flights WHERE active = true",
            nativeQuery = true)
     Page<Flight> findByActiveTrueRandom(Pageable pageable);
 
-    /** Top vuelos por rating para sección recomendados */
     @Query("SELECT f FROM Flight f WHERE f.active = true ORDER BY f.rating DESC")
     Page<Flight> findTopRated(Pageable pageable);
+
+    /** Vuelos activos sin reservas que se superpongan con el rango dado */
+    @Query("""
+            SELECT f FROM Flight f WHERE f.active = true
+            AND f.id NOT IN (
+                SELECT r.flight.id FROM Reservation r
+                WHERE r.checkIn < :checkOut AND r.checkOut > :checkIn
+            )
+            """)
+    Page<Flight> findAvailableInDateRange(
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            Pageable pageable);
+
+    /** Búsqueda por texto Y disponibilidad en rango de fechas */
+    @Query("""
+            SELECT f FROM Flight f WHERE f.active = true
+            AND (LOWER(f.name)                  LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(f.origin.city)            LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(f.origin.iataCode)        LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(f.destination.city)       LIKE LOWER(CONCAT('%', :q, '%'))
+              OR LOWER(f.destination.iataCode)   LIKE LOWER(CONCAT('%', :q, '%')))
+            AND f.id NOT IN (
+                SELECT r.flight.id FROM Reservation r
+                WHERE r.checkIn < :checkOut AND r.checkOut > :checkIn
+            )
+            """)
+    Page<Flight> searchActiveInDateRange(
+            @Param("q") String query,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut,
+            Pageable pageable);
 }

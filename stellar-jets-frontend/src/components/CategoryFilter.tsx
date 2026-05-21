@@ -6,15 +6,6 @@ interface Props {
   onSelect: (id: number | null) => void
 }
 
-const iconMap: Record<string, string> = {
-  star: '⭐',
-  globe: '🌍',
-  briefcase: '💼',
-  users: '👨‍👩‍👧',
-  plane: '✈️',
-  heart: '❤️',
-}
-
 export default function CategoryFilter({ categories, selected, onSelect }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -39,7 +30,6 @@ export default function CategoryFilter({ categories, selected, onSelect }: Props
               : 'bg-white text-gray-600 border-gray-200 hover:border-navy-400 hover:text-navy-600'
           }`}
         >
-          <span>{iconMap[cat.iconName] ?? '🗂️'}</span>
           {cat.name}
           <span className="ml-1 text-xs opacity-60">({cat.flightCount})</span>
         </button>

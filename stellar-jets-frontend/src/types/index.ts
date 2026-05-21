@@ -8,7 +8,6 @@ export interface Category {
   id: number
   name: string
   description: string
-  iconName: string
   imageUrl?: string
   flightCount: number
 }
@@ -31,11 +30,26 @@ export interface Flight {
   availableSeats: number
   durationMinutes: number | null
   rating: number
+  reviewCount: number
   active: boolean
   category: Category | null
   images: FlightImage[]
   characteristics: Characteristic[]
   coverImageUrl: string | null
+}
+
+export interface Review {
+  id: number
+  firstName: string
+  lastName: string
+  stars: number
+  comment: string | null
+  createdAt: string
+}
+
+export interface ReviewRequest {
+  stars: number
+  comment: string
 }
 
 export interface PagedResponse<T> {
@@ -103,4 +117,23 @@ export interface AdminUser {
   email: string
   role: string
   active: boolean
+}
+
+export interface OccupiedDateRange {
+  checkIn: string
+  checkOut: string
+}
+
+export interface ReservationRequest {
+  checkIn: string
+  checkOut: string
+}
+
+export interface ReservationResponse {
+  id: number
+  flightId: number
+  flightName: string
+  checkIn: string
+  checkOut: string
+  userEmail: string
 }

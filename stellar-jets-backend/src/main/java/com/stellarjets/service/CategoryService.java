@@ -4,6 +4,7 @@ import com.stellarjets.dto.CategoryDTO;
 import com.stellarjets.entity.Category;
 import com.stellarjets.exception.ResourceNotFoundException;
 import com.stellarjets.repository.CategoryRepository;
+import com.stellarjets.repository.FlightRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final FlightRepository flightRepository;
 
     public List<CategoryDTO> findAll() {
         return categoryRepository.findAll().stream()
@@ -38,7 +40,6 @@ public class CategoryService {
         Category category = Category.builder()
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .iconName(dto.getIconName())
                 .imageUrl(dto.getImageUrl())
                 .build();
         return toDTO(categoryRepository.save(category));
@@ -49,7 +50,6 @@ public class CategoryService {
         Category category = getOrThrow(id);
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
-        category.setIconName(dto.getIconName());
         category.setImageUrl(dto.getImageUrl());
         return toDTO(categoryRepository.save(category));
     }
@@ -57,6 +57,10 @@ public class CategoryService {
     @Transactional
     public void delete(Long id) {
         getOrThrow(id);
+        flightRepository.findByCategoryId(id).forEach(f -> {
+            f.setCategory(null);
+            flightRepository.save(f);
+        });
         categoryRepository.deleteById(id);
     }
 
@@ -72,7 +76,6 @@ public class CategoryService {
                 .id(c.getId())
                 .name(c.getName())
                 .description(c.getDescription())
-                .iconName(c.getIconName())
                 .imageUrl(c.getImageUrl())
                 .flightCount(count)
                 .build();

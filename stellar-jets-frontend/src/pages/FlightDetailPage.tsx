@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import type React from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   Plane, ArrowLeft, ArrowRight, Users, Timer, Tag,
-  CheckCircle, XCircle, Armchair,
+  CheckCircle, XCircle, Armchair, RefreshCw, Share2, Star,
+  ShieldCheck, Luggage, Clock, HeartPulse,
 } from 'lucide-react'
+import { DayPicker } from 'react-day-picker'
+import { es } from 'date-fns/locale'
+import 'react-day-picker/style.css'
 import CharIcon from '../components/CharIcon'
-import { getFlightById } from '../api/flightApi'
-import type { Flight } from '../types'
+import ShareModal from '../components/ShareModal'
+import { getFlightById, getOccupiedDates, getReviews, submitReview } from '../api/flightApi'
+import type { Flight, OccupiedDateRange, Review } from '../types'
 import ImageGallery from '../components/ImageGallery'
+import { useAuth } from '../context/AuthContext'
 
 function formatDuration(minutes: number | null): string {
   if (!minutes) return ''
@@ -20,9 +26,23 @@ function formatDuration(minutes: number | null): string {
 export default function FlightDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [flight, setFlight] = useState<Flight | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [occupiedRanges, setOccupiedRanges] = useState<OccupiedDateRange[]>([])
+  const [calendarError, setCalendarError] = useState(false)
+
+  // US#27 — Compartir
+  const [showShare, setShowShare] = useState(false)
+
+  // US#28 — Reseñas
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [reviewStars, setReviewStars] = useState(0)
+  const [hoverStar, setHoverStar] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   useEffect(() => {
     if (!id) return
@@ -31,6 +51,46 @@ export default function FlightDetailPage() {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [id])
+
+  const fetchOccupiedDates = useCallback(() => {
+    if (!id) return
+    setCalendarError(false)
+    getOccupiedDates(Number(id))
+      .then(setOccupiedRanges)
+      .catch(() => setCalendarError(true))
+  }, [id])
+
+  useEffect(() => { fetchOccupiedDates() }, [fetchOccupiedDates])
+
+  useEffect(() => {
+    if (!id) return
+    getReviews(Number(id)).then(setReviews).catch(() => {})
+  }, [id])
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (reviewStars === 0) { setReviewError('Seleccioná una puntuación.'); return }
+    setSubmitting(true)
+    setReviewError('')
+    try {
+      const saved = await submitReview(Number(id), { stars: reviewStars, comment: reviewComment })
+      setReviews(prev => {
+        const exists = prev.find(r => r.id === saved.id)
+        return exists ? prev.map(r => r.id === saved.id ? saved : r) : [saved, ...prev]
+      })
+      if (flight) {
+        const total = reviews.length + (reviews.find(r => r.firstName === user?.firstName) ? 0 : 1)
+        const avg = (reviews.reduce((s, r) => s + r.stars, 0) + saved.stars) / total
+        setFlight({ ...flight, rating: Math.round(avg * 10) / 10, reviewCount: total })
+      }
+      setReviewComment('')
+      setReviewStars(0)
+    } catch {
+      setReviewError('No se pudo guardar la reseña. Intentá de nuevo.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -54,6 +114,11 @@ export default function FlightDetailPage() {
   }
 
   const stars = Math.round(flight.rating ?? 0)
+
+  const occupiedModifier = occupiedRanges.map(r => ({
+    from: new Date(r.checkIn + 'T00:00:00'),
+    to:   new Date(r.checkOut + 'T00:00:00'),
+  }))
   const cover =
     flight.coverImageUrl ??
     flight.images?.find(i => i.cover)?.url ??
@@ -256,6 +321,53 @@ export default function FlightDetailPage() {
               </section>
             )}
 
+            {/* DISPONIBILIDAD — US#23 */}
+            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
+              <p className="section-eyebrow mb-1 text-[11px]">Disponibilidad</p>
+              <p className="text-xs text-gray-400 mb-4">Las fechas marcadas en rojo ya tienen reservas asignadas.</p>
+
+              {calendarError ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <p className="text-sm text-gray-500">No se pudo cargar el calendario de disponibilidad.</p>
+                  <button
+                    type="button"
+                    onClick={fetchOccupiedDates}
+                    className="flex items-center gap-2 text-sm text-navy-700 hover:text-gold-600 transition-colors font-medium"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reintentar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <DayPicker
+                      mode="multiple"
+                      numberOfMonths={2}
+                      locale={es}
+                      showOutsideDays
+                      disabled={{ before: new Date() }}
+                      modifiers={{ occupied: occupiedModifier }}
+                      modifiersClassNames={{ occupied: 'rdp-day--occupied' }}
+                      onDayClick={() => {}}
+                    />
+                  </div>
+
+                  {/* Leyenda */}
+                  <div className="flex items-center gap-5 pt-3 mt-1 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-700">15</span>
+                      <span className="text-xs text-gray-500">Disponible</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-red-500">15</span>
+                      <span className="text-xs text-gray-500">Ocupado</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </section>
+
             {/* DETALLES — 4 chips */}
             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
               <p className="section-eyebrow mb-4 text-[11px]">Detalles del vuelo</p>
@@ -300,6 +412,149 @@ export default function FlightDetailPage() {
                 ))}
               </div>
             </section>
+
+            {/* POLÍTICAS — US#26 */}
+            <section className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6">
+              <h2
+                className="text-navy-900 font-bold text-lg mb-1"
+                style={{ textDecoration: 'underline', textDecorationColor: '#D4AF37', textUnderlineOffset: '4px' }}
+              >
+                Políticas del vuelo
+              </h2>
+              <p className="text-gray-400 text-sm mb-5">Información importante antes de reservar.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {[
+                  {
+                    icon: <ShieldCheck className="w-5 h-5 text-gold-500" />,
+                    title: 'Cancelación y reembolsos',
+                    desc: 'Cancelaciones hasta 72 hs antes del vuelo reciben reembolso completo. Cancelaciones con menos de 72 hs tienen un cargo del 30% del valor del pasaje.',
+                  },
+                  {
+                    icon: <Luggage className="w-5 h-5 text-gold-500" />,
+                    title: 'Equipaje',
+                    desc: 'Se permite una valija de hasta 23 kg y un equipaje de mano de hasta 10 kg por pasajero. Excesos de equipaje tienen cargo adicional.',
+                  },
+                  {
+                    icon: <Clock className="w-5 h-5 text-gold-500" />,
+                    title: 'Check-in',
+                    desc: 'El check-in online abre 48 hs antes del vuelo. Presentarse en el aeropuerto con al menos 2 horas de anticipación. Pasaportes y documentos vigentes son obligatorios.',
+                  },
+                  {
+                    icon: <HeartPulse className="w-5 h-5 text-gold-500" />,
+                    title: 'Salud y seguridad',
+                    desc: 'Pasajeros con condiciones médicas deben presentar certificado médico. Stellar Jets cumple con todos los protocolos de seguridad aérea internacionales.',
+                  },
+                ].map(p => (
+                  <div key={p.title} className="flex gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gold-50 flex items-center justify-center">
+                      {p.icon}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-navy-900 text-sm mb-1">{p.title}</p>
+                      <p className="text-gray-500 text-xs leading-relaxed">{p.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* RESEÑAS — US#28 */}
+            <section id="resenas" className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
+              <div className="flex items-end justify-between mb-1">
+                <p className="section-eyebrow text-[11px]">Valoraciones</p>
+                {flight.reviewCount > 0 && (
+                  <span className="text-xs text-gray-400">{flight.reviewCount} {flight.reviewCount === 1 ? 'reseña' : 'reseñas'}</span>
+                )}
+              </div>
+
+              {/* Rating promedio grande */}
+              {flight.reviewCount > 0 && (
+                <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
+                  <span className="text-4xl font-extrabold text-navy-900">{Number(flight.rating).toFixed(1)}</span>
+                  <div>
+                    <div className="flex gap-0.5 mb-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 ${i < Math.round(flight.rating) ? 'text-gold-400' : 'text-gray-200'}`} fill={i < Math.round(flight.rating) ? '#D4AF37' : '#e5e7eb'} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400">Puntuación media</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Formulario nueva reseña */}
+              {user ? (
+                <form onSubmit={handleReviewSubmit} className="mb-6 pb-6 border-b border-gray-100">
+                  <p className="text-sm font-semibold text-navy-900 mb-3">Tu valoración</p>
+                  <div className="flex gap-1 mb-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onMouseEnter={() => setHoverStar(i + 1)}
+                        onMouseLeave={() => setHoverStar(0)}
+                        onClick={() => setReviewStars(i + 1)}
+                      >
+                        <Star
+                          className="w-7 h-7 transition-colors"
+                          fill={(hoverStar || reviewStars) > i ? '#D4AF37' : '#e5e7eb'}
+                          stroke="none"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={reviewComment}
+                    onChange={e => setReviewComment(e.target.value)}
+                    rows={3}
+                    placeholder="Contá tu experiencia (opcional)..."
+                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-gold-400 resize-none transition text-gray-800"
+                  />
+                  {reviewError && <p className="text-xs text-red-500 mt-1">{reviewError}</p>}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-gold mt-3 px-6 py-2.5 text-sm font-bold"
+                  >
+                    {submitting ? 'Guardando...' : 'Publicar reseña'}
+                  </button>
+                </form>
+              ) : (
+                <div className="mb-5 pb-5 border-b border-gray-100 text-center">
+                  <p className="text-sm text-gray-500 mb-2">Iniciá sesión para dejar tu reseña.</p>
+                  <Link to="/login" className="btn-gold px-5 py-2 text-sm">Iniciar sesión</Link>
+                </div>
+              )}
+
+              {/* Lista de reseñas */}
+              {reviews.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">Todavía no hay reseñas. ¡Sé el primero!</p>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map(r => (
+                    <div key={r.id} className="flex gap-3">
+                      <div className="w-9 h-9 rounded-full bg-navy-100 flex items-center justify-center text-xs font-bold text-navy-700 flex-shrink-0">
+                        {r.firstName[0]}{r.lastName[0]}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold text-navy-900">{r.firstName} {r.lastName}</p>
+                          <p className="text-[11px] text-gray-400">{r.createdAt}</p>
+                        </div>
+                        <div className="flex gap-0.5 my-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5" fill={i < r.stars ? '#D4AF37' : '#e5e7eb'} stroke="none" />
+                          ))}
+                        </div>
+                        {r.comment && <p className="text-sm text-gray-600 leading-relaxed">{r.comment}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
           </div>
 
           {/* ── SIDEBAR RESERVA (1/3) ── */}
@@ -337,6 +592,12 @@ export default function FlightDetailPage() {
                     </div>
                     <span className="text-white/50 text-xs">{flight.rating?.toFixed(1)} / 5.0</span>
                   </div>
+                  <a
+                    href="#resenas"
+                    className="inline-block mt-2 text-[11px] text-gold-400/70 hover:text-gold-400 transition underline underline-offset-2"
+                  >
+                    {flight.reviewCount > 0 ? `Ver ${flight.reviewCount} reseñas` : 'Dejá tu reseña'}
+                  </a>
                 </div>
 
                 <div className="px-5 py-5">
@@ -350,19 +611,36 @@ export default function FlightDetailPage() {
                     </div>
                   </div>
 
-                  {/* CTA */}
+                  {/* CTA — US#30 */}
                   <button
                     className="btn-gold w-full py-4 text-[0.95rem] font-bold"
                     disabled={!flight.active}
                     style={!flight.active ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+                    onClick={() => {
+                      if (!flight.active) return
+                      if (user) {
+                        navigate(`/reservations/${flight.id}`)
+                      } else {
+                        navigate('/login', { state: { from: `/reservations/${flight.id}`, requiresAuth: true } })
+                      }
+                    }}
                   >
                     {flight.active ? 'Reservar ahora' : 'No disponible'}
                     {flight.active && <ArrowRight className="w-4 h-4" />}
                   </button>
 
                   <button
+                    type="button"
+                    onClick={() => setShowShare(true)}
+                    className="w-full mt-2.5 py-2.5 text-sm text-gray-500 hover:text-navy-800 border border-gray-200 hover:border-gray-300 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Compartir vuelo
+                  </button>
+
+                  <button
                     onClick={() => navigate(-1)}
-                    className="w-full mt-2.5 py-2.5 text-sm text-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-2 py-2.5 text-sm text-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a resultados
@@ -386,6 +664,11 @@ export default function FlightDetailPage() {
 
         </div>
       </div>
+
+      {/* Modal compartir — US#27 */}
+      {showShare && flight && (
+        <ShareModal flight={flight} onClose={() => setShowShare(false)} />
+      )}
     </main>
   )
 }

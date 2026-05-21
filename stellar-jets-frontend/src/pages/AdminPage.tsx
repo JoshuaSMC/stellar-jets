@@ -61,11 +61,12 @@ export default function AdminPage() {
   const [confirm, setConfirm] = useState<number | null>(null)
 
   // ── categorías ──────────────────────────────────────────────────────────────
-  const [catForm, setCatForm] = useState<Partial<Category>>({ name: '', description: '', iconName: '', imageUrl: '' })
+  const [catForm, setCatForm] = useState<Partial<Category>>({ name: '', description: '', imageUrl: '' })
   const [editingCatId, setEditingCatId] = useState<number | null>(null)
   const [showCatForm, setShowCatForm] = useState(false)
   const [catError, setCatError] = useState<string | null>(null)
   const [savingCat, setSavingCat] = useState(false)
+  const [confirmCat, setConfirmCat] = useState<Category | null>(null)
 
   // ── características ─────────────────────────────────────────────────────────
   const [charForm, setCharForm] = useState<Partial<Characteristic>>({ name: '', iconName: '' })
@@ -204,14 +205,14 @@ export default function AdminPage() {
 
   const openCatCreate = () => {
     setEditingCatId(null)
-    setCatForm({ name: '', description: '', iconName: '', imageUrl: '' })
+    setCatForm({ name: '', description: '', imageUrl: '' })
     setCatError(null)
     setShowCatForm(true)
   }
 
   const openCatEdit = (c: Category) => {
     setEditingCatId(c.id)
-    setCatForm({ name: c.name, description: c.description, iconName: c.iconName, imageUrl: c.imageUrl ?? '' })
+    setCatForm({ name: c.name, description: c.description, imageUrl: c.imageUrl ?? '' })
     setCatError(null)
     setShowCatForm(true)
   }
@@ -233,8 +234,8 @@ export default function AdminPage() {
   }
 
   const handleDeleteCat = async (id: number) => {
-    if (!window.confirm('¿Eliminar esta categoría?')) return
     await adminDeleteCategory(id)
+    setConfirmCat(null)
     refreshShared()
   }
 
@@ -466,7 +467,6 @@ export default function AdminPage() {
                   <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wider text-gray-500 bg-gray-50/60">
                     <th className="px-4 py-3 w-10">Id</th>
                     <th className="px-4 py-3">Nombre</th>
-                    <th className="px-4 py-3 w-16">Icono</th>
                     <th className="px-4 py-3">Descripción</th>
                     <th className="px-4 py-3 w-20 text-center">Vuelos</th>
                     <th className="px-4 py-3 text-right w-28">Acciones</th>
@@ -477,13 +477,12 @@ export default function AdminPage() {
                     <tr key={c.id} className="hover:bg-gray-50/70">
                       <td className="px-4 py-3 text-gray-400 text-xs">{c.id}</td>
                       <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                      <td className="px-4 py-3 text-xl">{c.iconName}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-[240px]">{c.description}</td>
                       <td className="px-4 py-3 text-gray-600 text-center">{c.flightCount}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => openCatEdit(c)} className="p-1.5 rounded-lg text-navy-600 hover:bg-navy-50 transition-colors" title="Editar"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => handleDeleteCat(c.id)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => setConfirmCat(c)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -802,11 +801,6 @@ export default function AdminPage() {
                   onChange={e => setCatForm(f => ({ ...f, description: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Icono (emoji o nombre)</label>
-                <input className="input" placeholder="ej: ⭐ o star" value={catForm.iconName ?? ''}
-                  onChange={e => setCatForm(f => ({ ...f, iconName: e.target.value }))} />
-              </div>
-              <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">URL de imagen</label>
                 <input className="input" placeholder="https://..." value={catForm.imageUrl ?? ''}
                   onChange={e => setCatForm(f => ({ ...f, imageUrl: e.target.value }))} />
@@ -882,6 +876,29 @@ export default function AdminPage() {
             <div className="flex justify-center gap-3">
               <button onClick={() => setConfirm(null)} className="btn-secondary">Cancelar</button>
               <button onClick={() => handleDeleteFlight(confirm)} className="btn-danger">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Confirmar eliminación categoría — US#29 ───────────────────── */}
+      {confirmCat !== null && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mb-3 mx-auto" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">¿Eliminar categoría?</h3>
+            <p className="text-gray-700 text-sm font-medium mb-1">
+              "{confirmCat.name}"
+            </p>
+            <p className="text-gray-500 text-sm mb-2">
+              {confirmCat.flightCount > 0
+                ? `Esta categoría tiene ${confirmCat.flightCount} ${confirmCat.flightCount === 1 ? 'vuelo asociado' : 'vuelos asociados'}. Al eliminarla, esos vuelos quedarán sin categoría.`
+                : 'Esta categoría no tiene vuelos asociados.'}
+            </p>
+            <p className="text-red-500 text-xs mb-6">Esta acción no se puede deshacer.</p>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => setConfirmCat(null)} className="btn-secondary">Cancelar</button>
+              <button onClick={() => handleDeleteCat(confirmCat.id)} className="btn-danger">Confirmar eliminación</button>
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import axios from 'axios'
 import type {
   AdminUser, AuthUser, Category, Characteristic, Flight,
-  FlightRequest, LoginRequest, PagedResponse, RegisterRequest,
+  FlightRequest, LoginRequest, OccupiedDateRange, PagedResponse, RegisterRequest,
+  ReservationRequest, ReservationResponse, Review, ReviewRequest,
 } from '../types'
 
 const api = axios.create({
@@ -26,9 +27,18 @@ export const searchFlights = (
   categoryIds?: number[],
   page = 0,
   size = 10,
+  checkIn?: string,
+  checkOut?: string,
 ): Promise<PagedResponse<Flight>> =>
   api.get('/flights/search', {
-    params: { query, categoryIds: categoryIds?.join(',') || undefined, page, size },
+    params: {
+      query,
+      categoryIds: categoryIds?.join(',') || undefined,
+      page,
+      size,
+      checkIn: checkIn || undefined,
+      checkOut: checkOut || undefined,
+    },
   }).then(r => r.data)
 
 export const getRecommended = (): Promise<Flight[]> =>
@@ -36,6 +46,9 @@ export const getRecommended = (): Promise<Flight[]> =>
 
 export const getFlightById = (id: number): Promise<Flight> =>
   api.get(`/flights/${id}`).then(r => r.data)
+
+export const getOccupiedDates = (flightId: number): Promise<OccupiedDateRange[]> =>
+  api.get(`/reservations/${flightId}/occupied-dates`).then(r => r.data)
 
 // ---- Categorías ----
 
@@ -99,6 +112,30 @@ export const adminUpdateCharacteristic = (id: number, data: Partial<Characterist
 
 export const adminDeleteCharacteristic = (id: number): Promise<void> =>
   api.delete(`/admin/characteristics/${id}`)
+
+// ---- Reservas ----
+
+export const createReservation = (flightId: number, data: ReservationRequest): Promise<ReservationResponse> =>
+  api.post(`/reservations/${flightId}`, data).then(r => r.data)
+
+// ---- Reseñas ----
+
+export const getReviews = (flightId: number): Promise<Review[]> =>
+  api.get(`/reviews/${flightId}`).then(r => r.data)
+
+export const submitReview = (flightId: number, data: ReviewRequest): Promise<Review> =>
+  api.post(`/reviews/${flightId}`, data).then(r => r.data)
+
+// ---- Favoritos ----
+
+export const getFavorites = (): Promise<Flight[]> =>
+  api.get('/favorites').then(r => r.data)
+
+export const addFavorite = (flightId: number): Promise<void> =>
+  api.post(`/favorites/${flightId}`).then(r => r.data)
+
+export const removeFavorite = (flightId: number): Promise<void> =>
+  api.delete(`/favorites/${flightId}`).then(r => r.data)
 
 // ---- Admin: Usuarios ----
 

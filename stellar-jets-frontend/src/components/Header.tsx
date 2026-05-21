@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useFavorites } from '../context/FavoritesContext'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -9,6 +11,7 @@ export default function Header() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { favorites } = useFavorites()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -130,6 +133,21 @@ export default function Header() {
                         {user.role === 'ADMIN' ? 'Administrador' : 'Usuario'}
                       </span>
                     </div>
+                    <Link
+                      to="/favoritos"
+                      onClick={() => setAvatarOpen(false)}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-red-400" fill="#f87171" />
+                        Mis favoritos
+                      </span>
+                      {favorites.length > 0 && (
+                        <span className="text-[10px] font-bold bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full">
+                          {favorites.length}
+                        </span>
+                      )}
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
@@ -192,6 +210,7 @@ export default function Header() {
                     <p className="text-xs text-white/50">{user.email}</p>
                   </div>
                 </div>
+                {navLink('/favoritos', '❤ Mis favoritos')}
                 <button
                   onClick={handleLogout}
                   className="mx-4 btn-ghost text-sm text-center text-red-400"

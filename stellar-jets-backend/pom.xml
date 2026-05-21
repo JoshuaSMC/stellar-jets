@@ -115,6 +115,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring Security Test — @WithMockUser para tests de integración -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Selenium WebDriver -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

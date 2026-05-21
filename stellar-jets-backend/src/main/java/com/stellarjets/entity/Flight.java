@@ -67,6 +67,10 @@ public class Flight {
     @Column(precision = 3, scale = 1)
     private BigDecimal rating;
 
+    @Column(name = "review_count", nullable = false)
+    @Builder.Default
+    private int reviewCount = 0;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
