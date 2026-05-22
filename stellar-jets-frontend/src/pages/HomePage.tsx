@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import type React from 'react'
 import type { DateRange } from 'react-day-picker'
-import { X, MapPin, CalendarDays } from 'lucide-react'
+import { X, MapPin, CalendarDays, Plane } from 'lucide-react'
 import { getActiveCategories, getRecommended, searchFlights } from '../api/flightApi'
 import type { Category, Flight, PagedResponse } from '../types'
 import FlightCard from '../components/FlightCard'
@@ -429,8 +429,8 @@ export default function HomePage() {
             </div>
           ) : paged?.content.length === 0 ? (
             <div className="text-center py-24">
-              <p className="text-5xl mb-4">✈️</p>
-              <p className="text-xl font-semibold text-white mb-2">Sin resultados</p>
+              <Plane className="w-16 h-16 text-gold-500 mx-auto mb-4" />
+              <p className="text-xl font-semibold text-[#0A1428] mb-2">Sin resultados</p>
               <p className="text-[#64748B] text-sm mb-6">
                 {dateRange?.from
                   ? 'No encontramos vuelos disponibles para esas fechas.'

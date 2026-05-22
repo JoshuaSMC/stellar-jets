@@ -341,10 +341,17 @@
 }
 
 /* Occupied dates modifier for react-day-picker (US#23) */
-.rdp-day--occupied button,
 .rdp-day--occupied {
-  background-color: transparent !important;
-  color: #ef4444 !important;
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
   font-weight: 600 !important;
   opacity: 1 !important;
+  border-radius: 4px;
+}
+
+/* Past/disabled dates — fondo gris claro */
+.rdp-day_button:disabled:not(.rdp-day--occupied) {
+  background-color: #f3f4f6 !important;
+  color: #d1d5db !important;
+  border-radius: 4px;
 }

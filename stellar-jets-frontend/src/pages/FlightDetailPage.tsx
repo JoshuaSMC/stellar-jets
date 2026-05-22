@@ -46,6 +46,7 @@ export default function FlightDetailPage() {
 
   useEffect(() => {
     if (!id) return
+    window.scrollTo({ top: 0, behavior: 'instant' })
     getFlightById(Number(id))
       .then(setFlight)
       .catch(() => setError(true))
@@ -205,7 +206,7 @@ export default function FlightDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
           {/* ── COLUMNA CONTENIDO (2/3) ── */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
 
             {/* DESCRIPCIÓN + imagen lateral — Qatar style */}
             {flight.description && (
@@ -558,8 +559,8 @@ export default function FlightDetailPage() {
           </div>
 
           {/* ── SIDEBAR RESERVA (1/3) ── */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4">
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <div className="lg:sticky lg:top-24 space-y-4">
 
               {/* Card precio + reserva */}
               <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
@@ -669,6 +670,8 @@ export default function FlightDetailPage() {
       {showShare && flight && (
         <ShareModal flight={flight} onClose={() => setShowShare(false)} />
       )}
+
+
     </main>
   )
 }

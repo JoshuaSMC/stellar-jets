@@ -351,14 +351,16 @@ export default function ReservationPage() {
                     <label className="block text-xs font-medium text-gray-600 mb-2">
                       Fechas de viaje <span className="text-red-400">*</span>
                     </label>
-                    <div className="rounded-xl border flex justify-center" style={{ borderColor: '#e5e7eb', background: '#fafafa' }}>
+                    <div className="rounded-xl border flex justify-center overflow-x-auto" style={{ borderColor: '#e5e7eb', background: '#fafafa' }}>
                       <DayPicker
                         mode="range"
                         selected={range}
                         onSelect={r => { setRange(r); setError('') }}
                         numberOfMonths={1}
                         locale={es}
-                        disabled={[{ before: new Date() }, ...occupied]}
+                        disabled={{ before: new Date() }}
+                        modifiers={{ occupied }}
+                        modifiersClassNames={{ occupied: 'rdp-day--occupied' }}
                         showOutsideDays
                       />
                     </div>
