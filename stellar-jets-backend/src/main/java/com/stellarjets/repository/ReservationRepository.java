@@ -13,7 +13,10 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findByFlightId(Long flightId);
 
-    @Query("SELECT COUNT(r) > 0 FROM Reservation r WHERE r.flight.id = :flightId " +
+    List<Reservation> findByUserEmailOrderByCreatedAtDesc(String userEmail);
+
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Reservation r " +
+           "WHERE r.flight.id = :flightId " +
            "AND r.checkIn <= :checkOut AND r.checkOut >= :checkIn")
     boolean existsOverlap(@Param("flightId") Long flightId,
                           @Param("checkIn") LocalDate checkIn,

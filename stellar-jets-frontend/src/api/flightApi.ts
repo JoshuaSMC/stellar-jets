@@ -6,7 +6,7 @@ import type {
 } from '../types'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${import.meta.env.VITE_API_BASE_URL ?? ''}/api`,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -117,6 +117,9 @@ export const adminDeleteCharacteristic = (id: number): Promise<void> =>
 
 export const createReservation = (flightId: number, data: ReservationRequest): Promise<ReservationResponse> =>
   api.post(`/reservations/${flightId}`, data).then(r => r.data)
+
+export const getMyReservations = (): Promise<ReservationResponse[]> =>
+  api.get('/reservations/my').then(r => r.data)
 
 // ---- Reseñas ----
 

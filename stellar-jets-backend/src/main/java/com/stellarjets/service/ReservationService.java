@@ -5,8 +5,10 @@ import com.stellarjets.dto.ReservationRequestDTO;
 import com.stellarjets.dto.ReservationResponseDTO;
 import com.stellarjets.entity.Flight;
 import com.stellarjets.entity.Reservation;
+import com.stellarjets.entity.User;
 import com.stellarjets.repository.FlightRepository;
 import com.stellarjets.repository.ReservationRepository;
+import com.stellarjets.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final FlightRepository flightRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<OccupiedDateRangeDTO> getOccupiedDates(Long flightId) {
         return reservationRepository.findByFlightId(flightId).stream()
@@ -29,6 +33,12 @@ public class ReservationService {
                         .checkIn(r.getCheckIn().toString())
                         .checkOut(r.getCheckOut().toString())
                         .build())
+                .toList();
+    }
+
+    public List<ReservationResponseDTO> getMyReservations(String userEmail) {
+        return reservationRepository.findByUserEmailOrderByCreatedAtDesc(userEmail).stream()
+                .map(this::toDTO)
                 .toList();
     }
 
@@ -54,13 +64,42 @@ public class ReservationService {
                 .userEmail(userEmail)
                 .build());
 
+        ReservationResponseDTO dto = toDTO(saved);
+
+        userRepository.findByEmail(userEmail).ifPresent(user ->
+            emailService.sendReservationConfirmation(
+                userEmail,
+                user.getFirstName(),
+                user.getLastName(),
+                dto.getId(),
+                dto.getFlightName(),
+                dto.getFlightOrigin(),
+                dto.getFlightDestination(),
+                dto.getCheckIn(),
+                dto.getCheckOut()
+            )
+        );
+
+        return dto;
+    }
+
+    private ReservationResponseDTO toDTO(Reservation r) {
+        Flight f = r.getFlight();
+        String cover = f.getImages() == null ? null :
+                f.getImages().stream().filter(i -> i.isCover()).map(i -> i.getUrl()).findFirst()
+                .or(() -> f.getImages().stream().map(i -> i.getUrl()).findFirst())
+                .orElse(null);
         return ReservationResponseDTO.builder()
-                .id(saved.getId())
-                .flightId(flightId)
-                .flightName(flight.getName())
-                .checkIn(saved.getCheckIn().toString())
-                .checkOut(saved.getCheckOut().toString())
-                .userEmail(userEmail)
+                .id(r.getId())
+                .flightId(f.getId())
+                .flightName(f.getName())
+                .flightOrigin(f.getOrigin() != null ? f.getOrigin().getCity() + " (" + f.getOrigin().getIataCode() + ")" : null)
+                .flightDestination(f.getDestination() != null ? f.getDestination().getCity() + " (" + f.getDestination().getIataCode() + ")" : null)
+                .coverImageUrl(cover)
+                .checkIn(r.getCheckIn().toString())
+                .checkOut(r.getCheckOut().toString())
+                .userEmail(r.getUserEmail())
+                .createdAt(r.getCreatedAt() != null ? r.getCreatedAt().toLocalDate().toString() : null)
                 .build();
     }
 }

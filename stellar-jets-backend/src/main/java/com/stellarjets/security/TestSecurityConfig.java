@@ -19,7 +19,13 @@ public class TestSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/reservations/*/occupied-dates").permitAll()
+                        .requestMatchers("/api/reservations/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().permitAll()
+                )
                 .build();
     }
 

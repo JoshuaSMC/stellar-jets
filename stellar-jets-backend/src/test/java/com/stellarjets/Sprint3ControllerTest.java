@@ -356,6 +356,7 @@ class Sprint3ControllerTest {
     // ─── US#29: Eliminar categoría ────────────────────────────────────────────
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @Feature("US#29 — Eliminar categoría")
     @Story("Eliminar categoría existente devuelve 204")
     @DisplayName("TC-S3-23 | US#29 — Eliminar categoría existente: devuelve 204")
@@ -365,6 +366,7 @@ class Sprint3ControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @Feature("US#29 — Eliminar categoría")
     @Story("Vuelos de la categoría eliminada quedan sin categoría")
     @DisplayName("TC-S3-24 | US#29 — Vuelos de categoría eliminada mantienen campo category nulo")
@@ -378,6 +380,7 @@ class Sprint3ControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @Feature("US#29 — Eliminar categoría")
     @Story("Eliminar categoría inexistente devuelve 404")
     @DisplayName("TC-S3-25 | US#29 — Eliminar categoría inexistente: devuelve 404")
@@ -387,6 +390,7 @@ class Sprint3ControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @Feature("US#29 — Eliminar categoría")
     @Story("Categoría eliminada no aparece en listado público")
     @DisplayName("TC-S3-26 | US#29 — Categoría eliminada no aparece en listado público")

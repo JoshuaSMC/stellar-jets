@@ -21,7 +21,13 @@ Thumbs.db
 # Env
 .env
 .env.local
+.env.*.local
 stellar-jets-backend/.env
+stellar-jets-backend/.env.*
+stellar-jets-frontend/.env
+stellar-jets-frontend/.env.*
+!stellar-jets-backend/.env.example
+!stellar-jets-frontend/.env.example
 
 # AspectJ dump files
 ajcore.*.txt

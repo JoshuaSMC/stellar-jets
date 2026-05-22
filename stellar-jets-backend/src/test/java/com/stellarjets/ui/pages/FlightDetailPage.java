@@ -141,6 +141,34 @@ public class FlightDetailPage extends BasePage {
             || !$$(By.cssSelector("[class*='modal'], [class*='dialog'], [role='dialog']")).isEmpty();
     }
 
+    // ── Reserva (US#30) ──────────────────────────────────────────────────────
+
+    public boolean hasReserveButton() {
+        String t = mainText();
+        return t.contains("reservar") || t.contains("reserva")
+                || !$$(By.xpath("//button[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'reservar')]")).isEmpty();
+    }
+
+    @Step("Clic en botón Reservar")
+    public void clickReserve() {
+        List<WebElement> btns = $$(By.xpath(
+            "//button[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'reservar')]"));
+        if (!btns.isEmpty()) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", btns.get(0));
+            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btns.get(0));
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+        }
+    }
+
+    public boolean isRedirectedToLogin() {
+        return driver.getCurrentUrl().contains("/login");
+    }
+
+    public boolean isRedirectedToReservation() {
+        return driver.getCurrentUrl().contains("/reservations/");
+    }
+
     // ── Reseñas (US#28) ───────────────────────────────────────────────────────
 
     public boolean hasReviewsSection() {

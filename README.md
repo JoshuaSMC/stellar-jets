@@ -15,11 +15,12 @@ Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse
 - React Router v6
 - Axios
 - Lucide React (iconografía)
+- react-day-picker 10 (calendario de fechas)
 
 ### ☕ Backend
 - Java 21
 - Spring Boot 3.3.5
-- Spring Security 6 + JWT (JJWT 0.12)
+- Spring Security 6 + JWT (JJWT 0.12.6)
 - Spring Data JPA + Hibernate
 - H2 Database (in-memory)
 - Spring Mail (Mailtrap sandbox)
@@ -43,7 +44,7 @@ Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse
 
 ### 📦 Clonar el repositorio
 ```bash
-git clone https://github.com/[usuario]/stellar-jets.git
+git clone https://github.com/JoshuaSMC/stellar-jets.git
 cd stellar-jets
 ```
 
@@ -54,8 +55,15 @@ cd stellar-jets
 > La base de datos H2 es **in-memory**: se crea automáticamente al iniciar con 11 vuelos, 4 categorías, 8 características y 2 usuarios de prueba. No requiere instalar ni configurar ninguna base de datos.
 
 #### Variables de entorno (opcionales — solo para notificación por email):
+
 ```bash
-# Solo necesarias si querés probar el envío de emails con Mailtrap
+cp .env.example .env
+# Editá .env con tus credenciales de Mailtrap
+```
+
+El archivo `.env.example` incluido en el repo muestra las variables requeridas:
+
+```
 MAIL_USERNAME=<tu_mailtrap_user>
 MAIL_PASSWORD=<tu_mailtrap_pass>
 ```
@@ -72,7 +80,8 @@ MAIL_USERNAME=<user> MAIL_PASSWORD=<pass> mvn spring-boot:run
 ```
 
 > El backend estará disponible en `http://localhost:8080`  
-> Swagger UI disponible en `http://localhost:8080/swagger-ui.html`
+> Swagger UI disponible en `http://localhost:8080/swagger-ui.html`  
+> Consola H2 disponible en `http://localhost:8080/h2-console` — JDBC URL: `jdbc:h2:mem:stellarjets` · Usuario: `sa` · Sin contraseña
 
 ---
 
@@ -105,7 +114,21 @@ No se requiere archivo `.env`. El frontend usa el proxy de Vite para redirigir `
 | GET | `/api/flights/recommended` | Top 10 vuelos por rating | ❌ |
 | GET | `/api/flights/{id}` | Detalle de vuelo con características | ❌ |
 | GET | `/api/categories` | Listado de categorías | ❌ |
+| GET | `/api/categories/active` | Categorías activas con imagen y conteo de vuelos | ❌ |
 | GET | `/api/characteristics` | Listado de características | ❌ |
+| GET | `/api/reviews/{flightId}` | Reseñas de un vuelo | ❌ |
+| GET | `/api/reservations/{flightId}/occupied-dates` | Fechas ocupadas de un vuelo | ❌ |
+
+### Protegidos — Rol USER
+
+| Método | Endpoint | Descripción | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/reservations/{flightId}` | Crear reserva con checkIn y checkOut | ✅ USER |
+| GET | `/api/reservations/my` | Historial de reservas del usuario | ✅ USER |
+| POST | `/api/favorites/{flightId}` | Agregar vuelo a favoritos | ✅ USER |
+| DELETE | `/api/favorites/{flightId}` | Quitar vuelo de favoritos | ✅ USER |
+| GET | `/api/favorites` | Listado de vuelos favoritos del usuario | ✅ USER |
+| POST | `/api/reviews/{flightId}` | Crear o actualizar reseña de un vuelo | ✅ USER |
 
 ### Protegidos — Rol ADMIN
 
@@ -146,29 +169,45 @@ Desde Swagger UI podés:
 ## 🗂️ Diagrama de Entidades
 
 ```
-┌─────────────────────────────────────────┐       ┌──────────────────────┐
-│                 Flight                  │       │        User          │
-├─────────────────────────────────────────┤       ├──────────────────────┤
-│ id            bigint (PK)               │       │ id (PK)              │
-│ flightNumber  varchar                   │       │ firstName            │
-│ name          varchar (único)           │       │ lastName             │
-│ description   text                      │       │ email (único)        │
-│ price         decimal                   │       │ password (BCrypt)    │
-│ rating        double                    │       │ role  USER / ADMIN   │
-│ active        boolean                   │       └──────────────────────┘
-│ origin_*      @Embeddable AirportInfo   │
-│ dest_*        @Embeddable AirportInfo   │
-│ category_id   bigint (FK)              │
+┌─────────────────────────────────────────┐       ┌───────────────────────────┐
+│                 Flight                  │       │           User            │
+├─────────────────────────────────────────┤       ├───────────────────────────┤
+│ id              bigint (PK)             │       │ id         bigint (PK)    │
+│ flightNumber    varchar                 │       │ firstName  varchar        │
+│ name            varchar (único)         │       │ lastName   varchar        │
+│ description     text                    │       │ email      varchar (único)│
+│ price           decimal                 │       │ password   varchar BCrypt │
+│ availableSeats  int                     │       │ role       USER / ADMIN   │
+│ durationMinutes integer                 │       │ active     boolean        │
+│ rating          decimal                 │       └───────────────────────────┘
+│ reviewCount     int                     │                │ 1          │ 1
+│ active          boolean                 │                │            │
+│ origin_*        @Embeddable AirportInfo │                │            │
+│ dest_*          @Embeddable AirportInfo │                │            │
+│ category_id     bigint (FK → Category)  │                │            │
+└─────────────────────────────────────────┘                ▼ N          ▼ N
+       │ 1         │ 1         │ N         │ N    ┌─────────────┐ ┌──────────┐
+       │           │           │           │      │  Favorite   │ │  Review  │
+       ▼ N         ▼ N         ▼ N         ▼ N    ├─────────────┤ ├──────────┤
+┌──────────┐ ┌──────────────┐ ┌──────────────┐   │ id (PK)     │ │ id (PK)  │
+│ Category │ │ FlightImage  │ │Characteristic│   │ user_id(FK) │ │ user_id  │
+├──────────┤ ├──────────────┤ ├──────────────┤   │ flight_id   │ │ flight_id│
+│ id (PK)  │ │ id (PK)      │ │ id (PK)      │   │   (FK)      │ │   (FK)   │
+│ name     │ │ url          │ │ name         │   │ createdAt   │ │ stars    │
+│ imageUrl │ │ cover bool   │ │ iconName     │   └─────────────┘ │ comment  │
+│ desc     │ └──────────────┘ └──────────────┘                   │createdAt │
+└──────────┘                                                      └──────────┘
+
+┌─────────────────────────────────────────┐
+│               Reservation               │
+├─────────────────────────────────────────┤
+│ id          bigint (PK)                 │
+│ userEmail   varchar                     │
+│ checkIn     date                        │
+│ checkOut    date                        │
+│ createdAt   datetime                    │
+│ flight_id   bigint (FK → Flight)        │
 └─────────────────────────────────────────┘
-       │ 1              │ 1                    │ N
-       ▼ N              ▼ N                    ▼ N
-┌──────────┐    ┌──────────────┐    ┌──────────────────────┐
-│ Category │    │ FlightImage  │    │    Characteristic    │
-├──────────┤    ├──────────────┤    ├──────────────────────┤
-│ id (PK)  │    │ id (PK)      │    │ id (PK)              │
-│ name     │    │ url          │    │ name                 │
-│ imageUrl │    │ cover bool   │    │ iconName             │
-└──────────┘    └──────────────┘    └──────────────────────┘
 ```
 
 ---
@@ -190,12 +229,14 @@ Desde Swagger UI podés:
 | `Sprint1ControllerTest.java` | API | 18 — US#3 al US#11 |
 | `Sprint2ControllerTest.java` | API | 28 — US#12 al US#21 |
 | `Sprint3ControllerTest.java` | API | 26 — US#22 al US#29 |
+| `Sprint4ControllerTest.java` | API | 19 — US#30 al US#33 |
 | `Sprint1UITest.java` | UI Selenium | 20 — US#1 al US#11 |
 | `Sprint2UITest.java` | UI Selenium | 22 — US#12 al US#21 |
 | `Sprint3UITest.java` | UI Selenium | 23 — US#22 al US#29 |
+| `Sprint4UITest.java` | UI Selenium | 25 — US#30 al US#35 |
 
 **Page Object Model** — cada página tiene su clase en `ui/pages/`:
-`BasePage` · `HomePage` · `LoginPage` · `RegisterPage` · `FlightDetailPage` · `AdminPanelPage`
+`BasePage` · `HomePage` · `LoginPage` · `RegisterPage` · `FlightDetailPage` · `AdminPanelPage` · `ReservationPage` · `MyReservationsPage`
 
 **Usuarios de prueba** (creados automáticamente):
 
@@ -209,7 +250,7 @@ Desde Swagger UI podés:
 **Tests de API** (sin servidores):
 ```bash
 cd stellar-jets-backend
-mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest,Sprint3ControllerTest"
+mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest,Sprint3ControllerTest,Sprint4ControllerTest"
 ```
 
 **Tests de UI con Selenium** (3 terminales):
@@ -217,9 +258,9 @@ mvn test -Dtest="Sprint1ControllerTest,Sprint2ControllerTest,Sprint3ControllerTe
 > Los tests de UI se ejecutan por separado por sprint para garantizar el aislamiento entre suites y evitar interferencias de carga en el backend.
 
 ```bash
-# Terminal 1 — backend:
+# Terminal 1 — backend (con variables de entorno para email):
 cd stellar-jets-backend
-MAIL_USERNAME=test MAIL_PASSWORD=test mvn spring-boot:run
+./run-dev.sh
 
 # Terminal 2 — frontend:
 cd stellar-jets-frontend
@@ -230,6 +271,7 @@ cd stellar-jets-backend
 mvn test -Dtest="Sprint1UITest"
 mvn test -Dtest="Sprint2UITest"
 mvn test -Dtest="Sprint3UITest"
+mvn test -Dtest="Sprint4UITest"
 ```
 
 **Todos los tests:**
@@ -254,6 +296,7 @@ mvn allure:serve -Dallure.serve.port=5050
 | Sprint 1 | 18 ✅ | 20 ✅ | 12 ✅ | **50 / 50** |
 | Sprint 2 | 28 ✅ | 22 ✅ | 12 ✅ | **62 / 62** |
 | Sprint 3 | 26 ✅ | 23 ✅ | 16 ✅ | **65 / 65** |
+| Sprint 4 | 19 ✅ | 25 ✅ | 8 ✅ | **52 / 52** |
 
 ---
 
@@ -332,56 +375,56 @@ Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecució
 
 | # | Tipo | US | Caso de prueba | Estado |
 |---|------|----|---------------|--------|
-| TC-01 | 🌐 Selenium | US#1 | Header visible en la página principal | ✅ |
-| TC-02 | 🌐 Selenium | US#1 | Logo "STELLAR JETS" presente en el header | ✅ |
-| TC-03 | 🌐 Selenium | US#1 | Botones "Crear cuenta" e "Iniciar sesión" | ✅ |
-| TC-04 | 🌐 Selenium | US#1 | Clic en logo redirige al home | ✅ |
-| TC-05 | 🌐 Selenium | US#1 | Header fijo al hacer scroll | ✅ |
-| TC-06 | 🌐 Selenium | US#2 | Sección buscador visible en el home | ✅ |
-| TC-07 | 🌐 Selenium | US#2 | Sección recomendados visible | ✅ |
-| TC-08 | 👁 Manual | US#2 | Background acorde a identidad de marca | ✅ |
-| TC-09 | 👁 Manual | US#2 | Responsividad del home | ✅ |
-| TC-10 | 🤖 API | US#3 | Crear producto con nombre único → HTTP 201 | ✅ |
-| TC-11 | 🤖 API | US#3 | Nombre duplicado → HTTP 409 | ✅ |
-| TC-12 | 🤖 API | US#3 | Código de vuelo duplicado → HTTP 409 | ✅ |
-| TC-13 | 🤖 API | US#3 | Subir múltiples imágenes → array de 3 | ✅ |
-| TC-14 | 🤖 API | US#4 | Paginación máximo 10 productos | ✅ |
-| TC-15 | 🤖 API | US#4 | Búsqueda por nombre filtra correctamente | ✅ |
-| TC-16 | 🌐 Selenium | US#4 | Productos visibles en el home | ✅ |
-| TC-17 | 👁 Manual | US#4 | Distribución 2 columnas × 5 filas | ✅ |
-| TC-18 | 🤖 API | US#5 | API devuelve nombre, descripción e imágenes | ✅ |
-| TC-19 | 🌐 Selenium | US#5 | Página de detalle carga correctamente | ✅ |
-| TC-20 | 🌐 Selenium | US#5 | Header hero ocupa el ancho completo | ✅ |
-| TC-21 | 🌐 Selenium | US#5 | Botón "Volver" presente en el detalle | ✅ |
-| TC-22 | 👁 Manual | US#5 | Título alineado a la izquierda | ✅ |
-| TC-23 | 🤖 API | US#6 | API devuelve 5 imágenes | ✅ |
-| TC-24 | 🤖 API | US#6 | Primera imagen marcada como cover | ✅ |
-| TC-25 | 🌐 Selenium | US#6 | Imágenes visibles en el detalle | ✅ |
-| TC-26 | 🌐 Selenium | US#6 | Botón "Ver más" presente | ✅ |
-| TC-27 | 🌐 Selenium | US#6 | Clic en "Ver más" abre lightbox | ✅ |
-| TC-28 | 👁 Manual | US#6 | Layout desktop: imagen izq + grid 2×2 der | ✅ |
-| TC-29 | 👁 Manual | US#6 | Galería responsive en mobile/tablet | ✅ |
-| TC-30 | 🌐 Selenium | US#7 | Footer visible en el home | ✅ |
-| TC-31 | 🌐 Selenium | US#7 | Footer contiene logo, año y copyright | ✅ |
-| TC-32 | 🌐 Selenium | US#7 | Footer visible en página de detalle | ✅ |
-| TC-33 | 👁 Manual | US#7 | Responsividad del footer | ✅ |
-| TC-34 | 🤖 API | US#8 | Metadatos de paginación presentes | ✅ |
-| TC-35 | 🤖 API | US#8 | Paginación con filtro de categoría | ✅ |
-| TC-36 | 👁 Manual | US#8 | Botones Inicio · Anterior · Siguiente | ✅ |
-| TC-37 | 🤖 API | US#9 | Endpoint admin accesible → HTTP 200 | ✅ |
-| TC-38 | 🤖 API | US#9 | Toggle activo/inactivo cambia estado | ✅ |
-| TC-39 | 🤖 API | US#9 | Editar producto actualiza datos | ✅ |
-| TC-40 | 🌐 Selenium | US#9 | URL `/administracion` accesible | ✅ |
-| TC-41 | 🌐 Selenium | US#9 | Botón "Lista de productos" presente | ✅ |
-| TC-42 | 🌐 Selenium | US#9 | Botón "Agregar producto" presente | ✅ |
-| TC-43 | 👁 Manual | US#9 | Panel no disponible en mobile | ✅ |
-| TC-44 | 🤖 API | US#10 | Listado admin paginado con id y nombre | ✅ |
-| TC-45 | 🤖 API | US#10 | Producto creado aparece en listado admin | ✅ |
-| TC-46 | 👁 Manual | US#10 | Columnas Id, Nombre, Acciones visibles | ✅ |
-| TC-47 | 🤖 API | US#11 | Eliminar producto → 204 · GET posterior → 404 | ✅ |
-| TC-48 | 🤖 API | US#11 | Eliminar producto inexistente → 404 | ✅ |
-| TC-49 | 👁 Manual | US#11 | Modal de confirmación al presionar Eliminar | ✅ |
-| TC-50 | 👁 Manual | US#11 | Cancelar eliminación — sin cambios | ✅ |
+| TC-S1-01 | 🤖 API | US#3 | Crear producto con nombre único → HTTP 201 | ✅ |
+| TC-S1-02 | 🤖 API | US#3 | Nombre duplicado → HTTP 409 | ✅ |
+| TC-S1-03 | 🤖 API | US#3 | Código de vuelo duplicado → HTTP 409 | ✅ |
+| TC-S1-04 | 🤖 API | US#3 | Subir múltiples imágenes → array de 3 | ✅ |
+| TC-S1-05 | 🤖 API | US#4 | Paginación máximo 10 productos | ✅ |
+| TC-S1-06 | 🤖 API | US#4 | Búsqueda por nombre filtra correctamente | ✅ |
+| TC-S1-07 | 🤖 API | US#5 | API devuelve nombre, descripción e imágenes | ✅ |
+| TC-S1-08 | 🤖 API | US#6 | API devuelve 5 imágenes | ✅ |
+| TC-S1-09 | 🤖 API | US#6 | Primera imagen marcada como cover | ✅ |
+| TC-S1-10 | 🤖 API | US#8 | Metadatos de paginación presentes | ✅ |
+| TC-S1-11 | 🤖 API | US#8 | Paginación con filtro de categoría | ✅ |
+| TC-S1-12 | 🤖 API | US#9 | Endpoint admin accesible → HTTP 200 | ✅ |
+| TC-S1-13 | 🤖 API | US#9 | Toggle activo/inactivo cambia estado | ✅ |
+| TC-S1-14 | 🤖 API | US#9 | Editar producto actualiza datos | ✅ |
+| TC-S1-15 | 🤖 API | US#10 | Listado admin paginado con id y nombre | ✅ |
+| TC-S1-16 | 🤖 API | US#10 | Producto creado aparece en listado admin | ✅ |
+| TC-S1-17 | 🤖 API | US#11 | Eliminar producto → 204 · GET posterior → 404 | ✅ |
+| TC-S1-18 | 🤖 API | US#11 | Eliminar producto inexistente → 404 | ✅ |
+| TC-UI-S1-01 | 🌐 Selenium | US#1 | Header visible en la página principal | ✅ |
+| TC-UI-S1-02 | 🌐 Selenium | US#1 | Logo "STELLAR JETS" presente en el header | ✅ |
+| TC-UI-S1-03 | 🌐 Selenium | US#1 | Botones "Crear cuenta" e "Iniciar sesión" | ✅ |
+| TC-UI-S1-04 | 🌐 Selenium | US#1 | Clic en logo redirige al home | ✅ |
+| TC-UI-S1-05 | 🌐 Selenium | US#1 | Header fijo al hacer scroll | ✅ |
+| TC-UI-S1-06 | 🌐 Selenium | US#2 | Sección buscador visible en el home | ✅ |
+| TC-UI-S1-07 | 🌐 Selenium | US#2 | Sección recomendados visible | ✅ |
+| TC-UI-S1-08 | 🌐 Selenium | US#4 | Productos visibles en el home | ✅ |
+| TC-UI-S1-09 | 🌐 Selenium | US#5 | Página de detalle carga correctamente | ✅ |
+| TC-UI-S1-10 | 🌐 Selenium | US#5 | Header hero ocupa el ancho completo | ✅ |
+| TC-UI-S1-11 | 🌐 Selenium | US#5 | Botón "Volver" presente en el detalle | ✅ |
+| TC-UI-S1-12 | 🌐 Selenium | US#6 | Imágenes visibles en el detalle | ✅ |
+| TC-UI-S1-13 | 🌐 Selenium | US#6 | Botón "Ver más" presente | ✅ |
+| TC-UI-S1-14 | 🌐 Selenium | US#6 | Clic en "Ver más" abre lightbox | ✅ |
+| TC-UI-S1-15 | 🌐 Selenium | US#7 | Footer visible en el home | ✅ |
+| TC-UI-S1-16 | 🌐 Selenium | US#7 | Footer contiene logo, año y copyright | ✅ |
+| TC-UI-S1-17 | 🌐 Selenium | US#7 | Footer visible en página de detalle | ✅ |
+| TC-UI-S1-18 | 🌐 Selenium | US#9 | URL `/administracion` accesible | ✅ |
+| TC-UI-S1-19 | 🌐 Selenium | US#9 | Botón "Lista de productos" presente | ✅ |
+| TC-UI-S1-20 | 🌐 Selenium | US#9 | Botón "Agregar producto" presente | ✅ |
+| TC-MAN-S1-01 | 👁 Manual | US#2 | Background acorde a identidad de marca | ✅ |
+| TC-MAN-S1-02 | 👁 Manual | US#2 | Responsividad del home | ✅ |
+| TC-MAN-S1-03 | 👁 Manual | US#4 | Distribución 2 columnas × 5 filas | ✅ |
+| TC-MAN-S1-04 | 👁 Manual | US#5 | Título alineado a la izquierda | ✅ |
+| TC-MAN-S1-05 | 👁 Manual | US#6 | Layout desktop: imagen izq + grid 2×2 der | ✅ |
+| TC-MAN-S1-06 | 👁 Manual | US#6 | Galería responsive en mobile/tablet | ✅ |
+| TC-MAN-S1-07 | 👁 Manual | US#7 | Responsividad del footer | ✅ |
+| TC-MAN-S1-08 | 👁 Manual | US#8 | Botones Inicio · Anterior · Siguiente | ✅ |
+| TC-MAN-S1-09 | 👁 Manual | US#9 | Panel no disponible en mobile | ✅ |
+| TC-MAN-S1-10 | 👁 Manual | US#10 | Columnas Id, Nombre, Acciones visibles | ✅ |
+| TC-MAN-S1-11 | 👁 Manual | US#11 | Modal de confirmación al presionar Eliminar | ✅ |
+| TC-MAN-S1-12 | 👁 Manual | US#11 | Cancelar eliminación — sin cambios | ✅ |
 
 ---
 
@@ -432,48 +475,68 @@ Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecució
 
 | # | Tipo | US | Caso de prueba | Estado |
 |---|------|----|---------------|--------|
-| TC-S2-01 | 🤖 API | US#12 | Registrar usuario → HTTP 201 · token JWT | ✅ |
-| TC-S2-02 | 🤖 API | US#12 | Email ya registrado → HTTP 409 | ✅ |
-| TC-S2-03 | 🤖 API | US#12 | Campos vacíos → HTTP 400 | ✅ |
-| TC-S2-04 | 🌐 Selenium | US#12 | Formulario de registro accesible en `/register` | ✅ |
-| TC-S2-05 | 🌐 Selenium | US#12 | Registro exitoso muestra pantalla de confirmación | ✅ |
-| TC-S2-06 | 🌐 Selenium | US#12 | Email duplicado muestra mensaje de error | ✅ |
-| TC-S2-07 | 👁 Manual | US#12 | Solo letras en nombre y apellido | ✅ |
-| TC-S2-08 | 🤖 API | US#13 | Login correcto → HTTP 200 · token JWT | ✅ |
-| TC-S2-09 | 🤖 API | US#13 | Contraseña incorrecta → HTTP 401 | ✅ |
-| TC-S2-10 | 🤖 API | US#13 | Email inexistente → HTTP 401 | ✅ |
-| TC-S2-11 | 🌐 Selenium | US#13 | Formulario de login accesible en `/login` | ✅ |
-| TC-S2-12 | 🌐 Selenium | US#13 | Login exitoso redirige al home con nombre en header | ✅ |
-| TC-S2-13 | 🌐 Selenium | US#13 | Login fallido muestra mensaje de error | ✅ |
-| TC-S2-14 | 👁 Manual | US#14 | Usuario autenticado ve su nombre en el header | ✅ |
-| TC-S2-15 | 👁 Manual | US#14 | Sesión persiste tras recargar la página | ✅ |
-| TC-S2-16 | 🌐 Selenium | US#15 | Logout elimina token y estado | ✅ |
-| TC-S2-17 | 👁 Manual | US#15 | Tras logout, rutas protegidas redirigen al login | ✅ |
-| TC-S2-18 | 🤖 API | US#16 | Endpoints admin con rol ADMIN → HTTP 200 | ✅ |
-| TC-S2-19 | 👁 Manual | US#16 | Usuario USER no ve el panel admin | ✅ |
-| TC-S2-20 | 👁 Manual | US#16 | Admin ve tabs: Vuelos · Características · Categorías · Usuarios | ✅ |
-| TC-S2-21 | 🤖 API | US#17 | Crear característica → HTTP 201 · `id`, `name`, `iconName` | ✅ |
-| TC-S2-22 | 🤖 API | US#17 | Editar característica → HTTP 200 · datos actualizados | ✅ |
-| TC-S2-23 | 🤖 API | US#17 | Eliminar característica → HTTP 204 | ✅ |
-| TC-S2-24 | 🤖 API | US#17 | Listar características → array con `name` e `iconName` | ✅ |
-| TC-S2-25 | 👁 Manual | US#17 | Panel admin muestra ícono Lucide correcto | ✅ |
-| TC-S2-26 | 👁 Manual | US#17 | Selector de ícono visual en modal de creación | ✅ |
-| TC-S2-27 | 🤖 API | US#18 | Detalle de vuelo incluye array `characteristics` | ✅ |
-| TC-S2-28 | 🌐 Selenium | US#18 | Sección "Características" visible en `/flights/1` | ✅ |
-| TC-S2-29 | 👁 Manual | US#18 | Íconos Lucide correctos por característica | ✅ |
-| TC-S2-30 | 👁 Manual | US#19 | Email de bienvenida enviado al registrar | ✅ |
-| TC-S2-31 | 👁 Manual | US#19 | Botón "Reenviar correo" en pantalla post-registro | ✅ |
-| TC-S2-32 | 👁 Manual | US#19 | Email no bloquea el registro si falla (`@Async`) | ✅ |
-| TC-S2-33 | 🤖 API | US#20 | Listar categorías activas → `imageUrl`, `flightCount` | ✅ |
-| TC-S2-34 | 🌐 Selenium | US#20 | Tarjetas de categorías con imagen visibles en el home | ✅ |
-| TC-S2-35 | 🌐 Selenium | US#20 | Filtro por categoría actualiza vuelos mostrados | ✅ |
-| TC-S2-36 | 👁 Manual | US#20 | Multi-selección de categorías filtra correctamente | ✅ |
-| TC-S2-37 | 👁 Manual | US#20 | Tarjeta "Todos" restaura el listado completo | ✅ |
-| TC-S2-38 | 🤖 API | US#21 | Crear categoría → HTTP 201 · `id`, `name`, `imageUrl` | ✅ |
-| TC-S2-39 | 🤖 API | US#21 | Editar categoría → HTTP 200 · datos actualizados | ✅ |
-| TC-S2-40 | 🤖 API | US#21 | Eliminar categoría → HTTP 204 | ✅ |
-| TC-S2-41 | 👁 Manual | US#21 | Formulario incluye campo URL de imagen | ✅ |
-| TC-S2-42 | 👁 Manual | US#21 | Imagen de categoría visible en tarjeta del home | ✅ |
+| TC-S2-01 | 🤖 API | US#12 | Registrar usuario con datos válidos: devuelve 201 + token JWT | ✅ |
+| TC-S2-02 | 🤖 API | US#12 | Email ya registrado: devuelve 409 | ✅ |
+| TC-S2-03 | 🤖 API | US#12 | Campos obligatorios vacíos: devuelve 400 | ✅ |
+| TC-S2-04 | 🤖 API | US#12 | Contraseña menor a 6 caracteres: devuelve 400 | ✅ |
+| TC-S2-05 | 🤖 API | US#13 | Login con credenciales correctas: devuelve 200 + token | ✅ |
+| TC-S2-06 | 🤖 API | US#13 | Login con contraseña incorrecta: devuelve 401 | ✅ |
+| TC-S2-07 | 🤖 API | US#13 | Login con email inexistente: devuelve 401 | ✅ |
+| TC-S2-08 | 🤖 API | US#14 | Token incluye firstName, lastName, email y role | ✅ |
+| TC-S2-09 | 🤖 API | US#16 | Endpoint admin /api/admin/users responde 200 | ✅ |
+| TC-S2-10 | 🤖 API | US#16 | Usuario registrado aparece en listado admin con rol USER | ✅ |
+| TC-S2-11 | 🤖 API | US#16 | Toggle de rol USER → ADMIN funciona correctamente | ✅ |
+| TC-S2-12 | 🤖 API | US#17 | Crear característica: devuelve 201 con id, name e iconName | ✅ |
+| TC-S2-13 | 🤖 API | US#17 | Listar características: devuelve 200 con array | ✅ |
+| TC-S2-14 | 🤖 API | US#17 | Editar característica: actualiza nombre e ícono | ✅ |
+| TC-S2-15 | 🤖 API | US#17 | Eliminar característica: devuelve 204 | ✅ |
+| TC-S2-16 | 🤖 API | US#18 | Detalle de vuelo incluye campo characteristics | ✅ |
+| TC-S2-17 | 🤖 API | US#18 | Características de vuelo incluyen name e iconName | ✅ |
+| TC-S2-18 | 🤖 API | US#19 | Registro exitoso aunque email service falle (async) | ✅ |
+| TC-S2-19 | 🤖 API | US#19 | Reenvío de confirmación con email válido: devuelve 200 | ✅ |
+| TC-S2-20 | 🤖 API | US#19 | Reenvío sin email: devuelve 400 | ✅ |
+| TC-S2-21 | 🤖 API | US#20 | Categorías activas devuelven array con imageUrl y flightCount | ✅ |
+| TC-S2-22 | 🤖 API | US#20 | Filtro por una categoría devuelve solo sus vuelos | ✅ |
+| TC-S2-23 | 🤖 API | US#20 | Filtro multi-categoría devuelve vuelos de ambas | ✅ |
+| TC-S2-24 | 🤖 API | US#20 | Búsqueda sin filtros devuelve todos los vuelos activos | ✅ |
+| TC-S2-25 | 🤖 API | US#21 | Crear categoría con imagen: devuelve 201 con imageUrl | ✅ |
+| TC-S2-26 | 🤖 API | US#21 | Editar categoría: actualiza nombre e imagen | ✅ |
+| TC-S2-27 | 🤖 API | US#21 | Eliminar categoría: devuelve 204 | ✅ |
+| TC-S2-28 | 🤖 API | US#21 | Listar todas las categorías: devuelve array con imageUrl | ✅ |
+| TC-UI-S2-01 | 🌐 Selenium | US#12 | Página de registro accesible en /register | ✅ |
+| TC-UI-S2-02 | 🌐 Selenium | US#12 | Formulario de registro tiene campos obligatorios | ✅ |
+| TC-UI-S2-03 | 🌐 Selenium | US#12 | Registro exitoso muestra pantalla de confirmación | ✅ |
+| TC-UI-S2-04 | 🌐 Selenium | US#12 | Email duplicado muestra mensaje de error | ✅ |
+| TC-UI-S2-05 | 🌐 Selenium | US#13 | Página de login accesible en /login | ✅ |
+| TC-UI-S2-06 | 🌐 Selenium | US#13 | Login exitoso con usuario existente | ✅ |
+| TC-UI-S2-07 | 🌐 Selenium | US#13 | Login fallido muestra mensaje de error | ✅ |
+| TC-UI-S2-08 | 🌐 Selenium | US#14 | Nombre del usuario visible en el header tras login | ✅ |
+| TC-UI-S2-09 | 🌐 Selenium | US#14 | Sesión persiste tras recargar la página | ✅ |
+| TC-UI-S2-10 | 🌐 Selenium | US#15 | Cerrar sesión regresa estado no autenticado | ✅ |
+| TC-UI-S2-11 | 🌐 Selenium | US#16 | Admin ve panel de administración en /administracion | ✅ |
+| TC-UI-S2-12 | 🌐 Selenium | US#16 | Panel admin contiene tabs de gestión | ✅ |
+| TC-UI-S2-13 | 🌐 Selenium | US#17 | Panel admin muestra sección de características | ✅ |
+| TC-UI-S2-14 | 🌐 Selenium | US#17 | Panel admin muestra lista de características existentes | ✅ |
+| TC-UI-S2-15 | 🌐 Selenium | US#18 | Sección características visible en detalle del vuelo | ✅ |
+| TC-UI-S2-16 | 🌐 Selenium | US#18 | Características muestran texto descriptivo | ✅ |
+| TC-UI-S2-17 | 🌐 Selenium | US#20 | Sección de categorías visible en el home | ✅ |
+| TC-UI-S2-18 | 🌐 Selenium | US#20 | Tarjeta "Todos" presente en sección categorías | ✅ |
+| TC-UI-S2-19 | 🌐 Selenium | US#20 | Clic en categoría actualiza la sección de vuelos | ✅ |
+| TC-UI-S2-20 | 🌐 Selenium | US#20 | Clic en "Todos" restaura el listado completo | ✅ |
+| TC-UI-S2-21 | 🌐 Selenium | US#21 | Panel admin contiene sección de categorías | ✅ |
+| TC-UI-S2-22 | 🌐 Selenium | US#21 | Categorías del sistema visibles en el panel admin | ✅ |
+| TC-MAN-S2-01 | 👁 Manual | US#12 | Solo letras permitidas en nombre y apellido | ✅ |
+| TC-MAN-S2-02 | 👁 Manual | US#14 | Usuario autenticado ve su nombre en el header | ✅ |
+| TC-MAN-S2-03 | 👁 Manual | US#15 | Tras logout, rutas protegidas redirigen al login | ✅ |
+| TC-MAN-S2-04 | 👁 Manual | US#16 | Usuario USER no ve el panel admin | ✅ |
+| TC-MAN-S2-05 | 👁 Manual | US#16 | Admin ve tabs: Vuelos · Características · Categorías · Usuarios | ✅ |
+| TC-MAN-S2-06 | 👁 Manual | US#17 | Panel admin muestra ícono Lucide correcto | ✅ |
+| TC-MAN-S2-07 | 👁 Manual | US#17 | Selector de ícono visual en modal de creación | ✅ |
+| TC-MAN-S2-08 | 👁 Manual | US#19 | Email de bienvenida recibido en Mailtrap al registrar | ✅ |
+| TC-MAN-S2-09 | 👁 Manual | US#19 | Botón "Reenviar correo" visible en pantalla post-registro | ✅ |
+| TC-MAN-S2-10 | 👁 Manual | US#20 | Multi-selección de categorías filtra correctamente | ✅ |
+| TC-MAN-S2-11 | 👁 Manual | US#21 | Imagen de categoría visible en tarjeta del home | ✅ |
+| TC-MAN-S2-12 | 👁 Manual | US#21 | Formulario de categoría incluye campo URL de imagen | ✅ |
 
 ---
 
@@ -500,7 +563,7 @@ Continuación del Sprint 2. El alcance del Sprint 3 agrega buscador con selector
 |-----------|-----------|--------|
 | 1 | Buscador con doble selector de fechas (react-day-picker v10) | ✅ |
 | 2 | Endpoint `/api/flights/search` con parámetros checkIn/checkOut | ✅ |
-| 3 | Entidad `Reservation` + endpoint `/api/reservations/{id}/occupied-dates` | ✅ |
+| 3 | Endpoint `GET /api/reservations/{id}/occupied-dates` — fechas no disponibles del vuelo | ✅ |
 | 4 | Calendario de disponibilidad en el detalle del vuelo | ✅ |
 | 5 | Entidad `Favorite` + endpoints POST/DELETE/GET `/api/favorites` | ✅ |
 | 6 | Ícono de corazón en tarjetas con toggle optimista | ✅ |
@@ -589,6 +652,108 @@ Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecució
 | TC-MAN-S3-14 | 👁 Manual | US#27 | Clic en Twitter/X abre URL de Twitter intent | ✅ |
 | TC-MAN-S3-15 | 👁 Manual | US#28 | Estrellas interactivas — hover muestra valor antes de confirmar | ✅ |
 | TC-MAN-S3-16 | 👁 Manual | US#28 | Score promedio se muestra en listado con reviewCount | ✅ |
+
+---
+
+### Sprint 4
+
+#### Entregable 01 — Documentación / Bitácora
+
+**Definición del proyecto:**
+Continuación del Sprint 3. El alcance del Sprint 4 agrega el flujo completo de reservas: selección de fechas, visualización del detalle del producto en la página de reserva, creación y confirmación de reserva, historial de reservas del usuario, botón flotante de WhatsApp para contacto directo con el proveedor, y notificación por email al confirmar una reserva.
+
+**Rol: Scrum Master**
+
+| Ítem | Detalle |
+|------|---------|
+| **Metodología** | Scrum — iteraciones por sprint |
+| **Sprint** | Sprint 4 |
+| **Meta del sprint** | Reservas completas · Historial · WhatsApp · Notificación por email |
+| **Equipo** | Full-stack (Frontend · Backend · BBDD · Infra · UX/UI · QA) |
+| **Herramientas** | GitHub · Maven · Vite · react-day-picker · Spring Mail · Mailtrap |
+
+**Bitácora:**
+
+| Iteración | Actividad | Estado |
+|-----------|-----------|--------|
+| 1 | Entidad `Reservation` con `userEmail`, `checkIn`, `checkOut`, `createdAt` | ✅ |
+| 2 | Endpoint `POST /api/reservations/{flightId}` con validación de solapamiento (JPQL `CASE WHEN`) | ✅ |
+| 3 | Endpoint `GET /api/reservations/my` — historial del usuario autenticado | ✅ |
+| 4 | `ReservationResponseDTO` con `flightOrigin`, `flightDestination`, `coverImageUrl`, `createdAt` | ✅ |
+| 5 | Calendario visual (solo navegación) en el detalle del vuelo | ✅ |
+| 6 | `ReservationPage` — layout 2 columnas: detalle del producto + formulario con DayPicker embebido | ✅ |
+| 7 | Redireccionamiento al login con banner de autenticación requerida | ✅ |
+| 8 | Pantalla de confirmación post-reserva con datos del vuelo, fechas y usuario | ✅ |
+| 9 | Manejo de errores HTTP 400 / 409 / 404 con mensajes específicos en UI | ✅ |
+| 10 | `MyReservationsPage` — historial con cards, badge Próxima/Completada, link al vuelo | ✅ |
+| 11 | Enlace "Mis reservas" en el dropdown del header y menú mobile | ✅ |
+| 12 | `WhatsAppButton` — botón flotante `fixed bottom-right` con ícono SVG oficial | ✅ |
+| 13 | `EmailService.sendReservationConfirmation()` — email `@Async` tras confirmar reserva | ✅ |
+| 14 | `ScrollToTop` — restaura scroll al inicio en cada navegación | ✅ |
+| 15 | `run-dev.sh` — script para iniciar el backend con variables del `.env` | ✅ |
+
+**US completadas:** US#30 · US#31 · US#32 · US#33 · US#34 · US#35 ✅
+
+#### Entregable 02 — Planificación y Ejecución de Tests
+
+Ver sección [🧪 Testing](#-testing) para la estrategia, comandos de ejecución y resultados.
+
+**Casos de prueba Sprint 4:**
+
+| # | Tipo | US | Caso de prueba | Estado |
+|---|------|----|---------------|--------|
+| TC-S4-01 | 🤖 API | US#30 | Fechas ocupadas del vuelo 1: devuelve array con checkIn y checkOut | ✅ |
+| TC-S4-02 | 🤖 API | US#30 | Fechas ocupadas accesibles sin autenticación: devuelve 200 | ✅ |
+| TC-S4-03 | 🤖 API | US#30 | Búsqueda por fechas lejanas sin ocupar devuelve vuelos disponibles | ✅ |
+| TC-S4-04 | 🤖 API | US#30 | Crear reserva sin autenticación: devuelve 403 Forbidden | ✅ |
+| TC-S4-05 | 🤖 API | US#30 | Fechas solapadas con reserva existente: devuelve 409 Conflict | ✅ |
+| TC-S4-06 | 🤖 API | US#30 | checkOut ≤ checkIn: devuelve 400 Bad Request | ✅ |
+| TC-S4-07 | 🤖 API | US#31 | Detalle del vuelo: incluye name, description, origin, destination | ✅ |
+| TC-S4-08 | 🤖 API | US#31 | Detalle del vuelo: incluye images array y price | ✅ |
+| TC-S4-09 | 🤖 API | US#31 | Detalle del vuelo: incluye characteristics array y coverImageUrl | ✅ |
+| TC-S4-10 | 🤖 API | US#31 | Detalle del vuelo: incluye rating y availableSeats | ✅ |
+| TC-S4-11 | 🤖 API | US#32 | Reserva válida: devuelve 201 con id, flightName, checkIn, checkOut | ✅ |
+| TC-S4-12 | 🤖 API | US#32 | Reserva: respuesta incluye flightOrigin y flightDestination | ✅ |
+| TC-S4-13 | 🤖 API | US#32 | Reserva en vuelo inexistente: devuelve 404 Not Found | ✅ |
+| TC-S4-14 | 🤖 API | US#32 | Reserva sin body: devuelve 400 Bad Request | ✅ |
+| TC-S4-15 | 🤖 API | US#33 | Historial sin reservas: devuelve array vacío | ✅ |
+| TC-S4-16 | 🤖 API | US#33 | Reserva aparece en historial tras crearla | ✅ |
+| TC-S4-17 | 🤖 API | US#33 | Historial: cada reserva incluye flightOrigin, flightDestination y createdAt | ✅ |
+| TC-S4-18 | 🤖 API | US#33 | Historial sin autenticación: devuelve 403 Forbidden | ✅ |
+| TC-S4-19 | 🤖 API | US#33 | Múltiples reservas: devuelve lista ordenada (más reciente primero) | ✅ |
+| TC-UI-S4-01 | 🌐 Selenium | US#30 | Botón "Reservar ahora" visible en detalle del vuelo | ✅ |
+| TC-UI-S4-02 | 🌐 Selenium | US#30 | Usuario anónimo al hacer clic en reservar es redirigido al login | ✅ |
+| TC-UI-S4-03 | 🌐 Selenium | US#30 | Login muestra mensaje de autenticación requerida | ✅ |
+| TC-UI-S4-04 | 🌐 Selenium | US#30 | Usuario autenticado es redirigido a la página de reserva | ✅ |
+| TC-UI-S4-05 | 🌐 Selenium | US#30 | Calendario de selección de fechas visible en la página de reserva | ✅ |
+| TC-UI-S4-06 | 🌐 Selenium | US#30 | Calendario del detalle del vuelo es visual (solo navegación) | ✅ |
+| TC-UI-S4-07 | 🌐 Selenium | US#31 | Página de reserva muestra imagen del vuelo | ✅ |
+| TC-UI-S4-08 | 🌐 Selenium | US#31 | Página de reserva muestra la ruta (origen → destino) | ✅ |
+| TC-UI-S4-09 | 🌐 Selenium | US#31 | Página de reserva muestra el precio del vuelo | ✅ |
+| TC-UI-S4-10 | 🌐 Selenium | US#31 | Datos del usuario (nombre o email) visibles en la página de reserva | ✅ |
+| TC-UI-S4-11 | 🌐 Selenium | US#31 | Botón "Confirmar reserva" visible en el formulario | ✅ |
+| TC-UI-S4-12 | 🌐 Selenium | US#32 | Página de reserva carga con todos sus elementos principales | ✅ |
+| TC-UI-S4-13 | 🌐 Selenium | US#32 | Usuario anónimo en /reservations/:id es redirigido al login | ✅ |
+| TC-UI-S4-14 | 🌐 Selenium | US#32 | Vuelo inexistente en página de reserva muestra error | ✅ |
+| TC-UI-S4-15 | 🌐 Selenium | US#33 | /mis-reservas carga correctamente para usuario autenticado | ✅ |
+| TC-UI-S4-16 | 🌐 Selenium | US#33 | Historial muestra sección de reservas o estado vacío | ✅ |
+| TC-UI-S4-17 | 🌐 Selenium | US#33 | Usuario anónimo en /mis-reservas es redirigido al login | ✅ |
+| TC-UI-S4-18 | 🌐 Selenium | US#33 | Enlace "Mis reservas" visible en el menú del usuario autenticado | ✅ |
+| TC-UI-S4-19 | 🌐 Selenium | US#34 | Botón de WhatsApp visible en el home sin autenticación | ✅ |
+| TC-UI-S4-20 | 🌐 Selenium | US#34 | Botón de WhatsApp visible con usuario autenticado | ✅ |
+| TC-UI-S4-21 | 🌐 Selenium | US#34 | Botón de WhatsApp posicionado en bottom-right (fixed) | ✅ |
+| TC-UI-S4-22 | 🌐 Selenium | US#34 | Botón de WhatsApp tiene href que apunta a wa.me | ✅ |
+| TC-UI-S4-23 | 🌐 Selenium | US#34 | Botón de WhatsApp consistente en todas las páginas | ✅ |
+| TC-UI-S4-24 | 🌐 Selenium | US#35 | Confirmación de reserva muestra datos del vuelo y fechas | ✅ |
+| TC-UI-S4-25 | 🌐 Selenium | US#35 | Proceso de reserva completa: flujo trigger de email activo | ✅ |
+| TC-MAN-S4-01 | 👁 Manual | US#30 | Fechas ocupadas resaltadas en el calendario de reserva | ✅ |
+| TC-MAN-S4-02 | 👁 Manual | US#30 | No se puede seleccionar un rango que incluya fechas no disponibles | ✅ |
+| TC-MAN-S4-03 | 👁 Manual | US#31 | Datos del usuario expandibles con clic en la sección | ✅ |
+| TC-MAN-S4-04 | 👁 Manual | US#31 | Rango de fechas seleccionado se imprime debajo del calendario | ✅ |
+| TC-MAN-S4-05 | 👁 Manual | US#32 | Pantalla de confirmación muestra nombre del vuelo, fechas y usuario | ✅ |
+| TC-MAN-S4-06 | 👁 Manual | US#33 | Badge "Próxima" o "Completada" según fecha del checkOut | ✅ |
+| TC-MAN-S4-07 | 👁 Manual | US#34 | Clic en WhatsApp abre wa.me con mensaje prellenado | ✅ |
+| TC-MAN-S4-08 | 👁 Manual | US#35 | Email de confirmación recibido en Mailtrap tras reserva exitosa | ✅ |
 
 ---
 

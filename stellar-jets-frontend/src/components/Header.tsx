@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Heart } from 'lucide-react'
+import { Heart, CalendarDays } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 
@@ -148,6 +148,14 @@ export default function Header() {
                         </span>
                       )}
                     </Link>
+                    <Link
+                      to="/mis-reservas"
+                      onClick={() => setAvatarOpen(false)}
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <CalendarDays className="w-4 h-4 text-gold-500" />
+                      Mis reservas
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
@@ -211,6 +219,7 @@ export default function Header() {
                   </div>
                 </div>
                 {navLink('/favoritos', '❤ Mis favoritos')}
+                {navLink('/mis-reservas', '📅 Mis reservas')}
                 <button
                   onClick={handleLogout}
                   className="mx-4 btn-ghost text-sm text-center text-red-400"

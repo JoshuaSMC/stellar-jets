@@ -133,7 +133,11 @@ export interface ReservationResponse {
   id: number
   flightId: number
   flightName: string
+  flightOrigin: string | null
+  flightDestination: string | null
+  coverImageUrl: string | null
   checkIn: string
   checkOut: string
   userEmail: string
+  createdAt: string | null
 }

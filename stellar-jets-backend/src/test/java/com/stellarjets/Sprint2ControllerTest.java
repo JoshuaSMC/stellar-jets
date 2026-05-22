@@ -12,6 +12,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.security.test.context.support.WithMockUser;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Epic("Stellar Jets — Backend")
 @DisplayName("Sprint 2 — Tests de integración")
+@WithMockUser(roles = "ADMIN")
 class Sprint2ControllerTest {
 
     @Autowired MockMvc mvc;

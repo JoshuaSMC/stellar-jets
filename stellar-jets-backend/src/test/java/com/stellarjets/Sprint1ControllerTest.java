@@ -13,6 +13,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.security.test.context.support.WithMockUser;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Epic("Stellar Jets — Backend")
 @DisplayName("Sprint 1 — Tests de integración")
+@WithMockUser(roles = "ADMIN")
 class Sprint1ControllerTest {
 
     @Autowired MockMvc mvc;

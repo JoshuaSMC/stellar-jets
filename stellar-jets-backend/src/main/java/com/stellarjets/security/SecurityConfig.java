@@ -39,8 +39,8 @@ public class SecurityConfig {
                                 "/api/flights/**",
                                 "/api/categories/**",
                                 "/api/characteristics/**",
-                                "/api/reservations/**",
                                 "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reservations/*/occupied-dates").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

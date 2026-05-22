@@ -25,6 +25,11 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getOccupiedDates(flightId));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(Authentication auth) {
+        return ResponseEntity.ok(reservationService.getMyReservations(auth.getName()));
+    }
+
     @PostMapping("/{flightId}")
     public ResponseEntity<ReservationResponseDTO> createReservation(
             @PathVariable Long flightId,
