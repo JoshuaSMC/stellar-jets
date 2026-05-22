@@ -193,11 +193,18 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot plugin: excluye Lombok del fat-jar -->
+            <!-- Spring Boot plugin: repackage crea el fat-jar ejecutable -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.3.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <excludes>
                         <exclude>
