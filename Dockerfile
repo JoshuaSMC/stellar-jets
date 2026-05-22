@@ -3,7 +3,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY stellar-jets-backend/pom.xml stellar-jets-backend/
 COPY stellar-jets-backend/src stellar-jets-backend/src/
-RUN mvn -pl stellar-jets-backend -am clean package -DskipTests
+RUN mvn -N install && mvn -pl stellar-jets-backend clean package -DskipTests
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
