@@ -6,6 +6,32 @@ Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse
 
 ---
 
+## 🌐 Deploy
+
+| | URL |
+|---|---|
+| **Frontend** | https://stellarjets.netlify.app |
+| **Backend / API** | https://stellar-jets-production.up.railway.app |
+| **Swagger UI** | https://stellar-jets-production.up.railway.app/swagger-ui.html |
+
+---
+
+## 🖼️ Screenshots
+
+| Home | Home (Admin) |
+|------|-------------|
+| ![Home](docs/screenshots/home.png) | ![Home Admin](docs/screenshots/home-admin.png) |
+
+| Detalle de vuelo | Nueva reserva |
+|-----------------|--------------|
+| ![Detalle de vuelo](docs/screenshots/flight-detail.png) | ![Nueva reserva](docs/screenshots/reservation.png) |
+
+| Mis reservas | Panel de administración |
+|-------------|------------------------|
+| ![Mis reservas](docs/screenshots/my-reservations.png) | ![Panel Admin](docs/screenshots/admin.png) |
+
+---
+
 ## ⚙️ Tecnologías
 
 ### 🖥️ Frontend
