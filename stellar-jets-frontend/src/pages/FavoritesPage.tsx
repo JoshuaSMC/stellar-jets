@@ -1,23 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import FlightCard from '../components/FlightCard'
 
 export default function FavoritesPage() {
-  const { user } = useAuth()
   const { favorites, loading } = useFavorites()
-
-  if (!user) {
-    return (
-      <div className="pt-[68px] min-h-screen flex flex-col items-center justify-center gap-5" style={{ background: '#F4F7FB' }}>
-        <Heart className="w-14 h-14 text-gray-300" />
-        <p className="text-xl font-bold text-gray-800">Iniciá sesión para ver tus favoritos</p>
-        <p className="text-gray-400 text-sm">Guardá los vuelos que más te gustan para encontrarlos fácilmente.</p>
-        <Link to="/login" className="btn-gold px-8 py-3 mt-2">Iniciar sesión</Link>
-      </div>
-    )
-  }
 
   return (
     <main className="pt-[68px] min-h-screen" style={{ background: '#F4F7FB' }}>

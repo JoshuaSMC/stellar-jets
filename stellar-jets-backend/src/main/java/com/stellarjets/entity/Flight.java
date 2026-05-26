@@ -92,6 +92,18 @@ public class Flight {
     @Builder.Default
     private List<FlightImage> images = new ArrayList<>();
 
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Reservation> reservations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Favorite> favorites = new ArrayList<>();
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
+
     public void addImage(FlightImage image) {
         image.setFlight(this);
         this.images.add(image);

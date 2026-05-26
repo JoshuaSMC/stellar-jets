@@ -15,6 +15,7 @@ import { getFlightById, getOccupiedDates, getReviews, submitReview } from '../ap
 import type { Flight, OccupiedDateRange, Review } from '../types'
 import ImageGallery from '../components/ImageGallery'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 function formatDuration(minutes: number | null): string {
   if (!minutes) return ''
@@ -27,6 +28,7 @@ export default function FlightDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
   const [flight, setFlight] = useState<Flight | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -86,8 +88,9 @@ export default function FlightDetailPage() {
       }
       setReviewComment('')
       setReviewStars(0)
+      toast.success('¡Reseña guardada correctamente!')
     } catch {
-      setReviewError('No se pudo guardar la reseña. Intentá de nuevo.')
+      toast.error('No se pudo guardar la reseña. Intentá de nuevo.')
     } finally {
       setSubmitting(false)
     }

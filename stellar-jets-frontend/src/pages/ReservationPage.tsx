@@ -12,6 +12,7 @@ import CharIcon from '../components/CharIcon'
 import { getFlightById, getOccupiedDates, createReservation } from '../api/flightApi'
 import type { Flight, OccupiedDateRange, ReservationResponse } from '../types'
 import { useAuth } from '../context/AuthContext'
+import { getErrorMessage } from '../utils/errorUtils'
 
 function parseOccupied(ranges: OccupiedDateRange[]) {
   return ranges.map(r => ({
@@ -47,10 +48,6 @@ export default function ReservationPage() {
   const [confirmed, setConfirmed] = useState<ReservationResponse | null>(null)
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login', { state: { from: `/reservations/${id}`, requiresAuth: true } })
-      return
-    }
     if (!id) return
     Promise.all([
       getFlightById(Number(id)),
@@ -87,8 +84,7 @@ export default function ReservationPage() {
       })
       setConfirmed(res)
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number; data?: { message?: string } } }).response?.status
-      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      const status = (err as { response?: { status?: number } }).response?.status
       if (status === 409) {
         setError('Las fechas seleccionadas se solapan con una reserva existente. Por favor elegí otras fechas.')
       } else if (status === 400) {
@@ -96,7 +92,7 @@ export default function ReservationPage() {
       } else if (status === 404) {
         setError('El vuelo seleccionado no existe.')
       } else {
-        setError(msg ?? 'Ocurrió un error al procesar la reserva. Intentá de nuevo más tarde.')
+        setError(getErrorMessage(err, 'Ocurrió un error al procesar la reserva. Intentá de nuevo más tarde.'))
       }
     } finally {
       setSubmitting(false)

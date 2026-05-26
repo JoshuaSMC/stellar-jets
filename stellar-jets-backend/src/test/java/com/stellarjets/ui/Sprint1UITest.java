@@ -261,6 +261,7 @@ class Sprint1UITest {
     @Story("Panel admin accesible en /administracion")
     @DisplayName("TC-UI-18 | US#9 — Panel admin accesible en /administracion")
     void admin_url_accesible() {
+        loginPage.loginAs(ADMIN_EMAIL, ADMIN_PASS);
         adminPage.open();
         assertTrue(adminPage.isPanelVisible(), "Panel de administración no encontrado");
     }

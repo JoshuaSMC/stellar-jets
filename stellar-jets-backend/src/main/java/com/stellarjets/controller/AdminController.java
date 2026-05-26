@@ -56,14 +56,14 @@ public class AdminController {
     // ---- Categorías ----
 
     @PostMapping("/categories")
-    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO dto) {
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO dto) {
         CategoryDTO created = categoryService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/categories/{id}")
     public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id,
-                                                       @RequestBody CategoryDTO dto) {
+                                                       @Valid @RequestBody CategoryDTO dto) {
         return ResponseEntity.ok(categoryService.update(id, dto));
     }
 
@@ -81,13 +81,13 @@ public class AdminController {
     }
 
     @PostMapping("/characteristics")
-    public ResponseEntity<CharacteristicDTO> createCharacteristic(@RequestBody CharacteristicDTO dto) {
+    public ResponseEntity<CharacteristicDTO> createCharacteristic(@Valid @RequestBody CharacteristicDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(characteristicService.create(dto));
     }
 
     @PutMapping("/characteristics/{id}")
     public ResponseEntity<CharacteristicDTO> updateCharacteristic(@PathVariable Long id,
-                                                                   @RequestBody CharacteristicDTO dto) {
+                                                                   @Valid @RequestBody CharacteristicDTO dto) {
         return ResponseEntity.ok(characteristicService.update(id, dto));
     }
 

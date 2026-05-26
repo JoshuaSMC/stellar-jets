@@ -3,6 +3,7 @@ package com.stellarjets.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler {
         ErrorResponse body = buildError(HttpStatus.BAD_REQUEST, "Error de validación", request);
         body.setFieldErrors(fieldErrors);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(
+            BadCredentialsException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request));
     }
 
     @ExceptionHandler(ConflictException.class)

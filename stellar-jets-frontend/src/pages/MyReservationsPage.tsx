@@ -25,7 +25,6 @@ export default function MyReservationsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) { navigate('/login', { state: { from: '/mis-reservas', requiresAuth: true } }); return }
     getMyReservations()
       .then(setReservations)
       .finally(() => setLoading(false))

@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import type React from 'react'
-import { Link } from 'react-router-dom'
 import {
   Plane, Plus, FolderOpen, Star, Users, X, Pencil, Trash2,
-  Lock, ShieldOff, Monitor, AlertTriangle,
+  Monitor, AlertTriangle,
 } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import CharIcon, { CHAR_ICON_MAP } from '../components/CharIcon'
@@ -20,6 +19,8 @@ import type {
 } from '../types'
 import Pagination from '../components/Pagination'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
+import { getErrorMessage } from '../utils/errorUtils'
 
 // ─── types & constants ────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ export default function AdminPage() {
   const [view, setView] = useState<View>('vuelos')
 
   const { user } = useAuth()
+  const toast = useToast()
 
   // ── vuelos ──────────────────────────────────────────────────────────────────
   const [paged, setPaged] = useState<PagedResponse<Flight> | null>(null)
@@ -174,21 +176,31 @@ export default function AdminPage() {
         : await adminCreateFlight(flightForm)
       setShowFlightForm(false)
       fetchFlights(page)
+      toast.success(editingId ? 'Vuelo actualizado correctamente.' : 'Vuelo creado correctamente.')
     } catch (err: unknown) {
-      const res = (err as { response?: { data?: { message?: string } } }).response
-      setFlightError(res?.data?.message ?? 'Error al guardar. Revisá los datos e intentá de nuevo.')
+      setFlightError(getErrorMessage(err, 'Error al guardar. Revisá los datos e intentá de nuevo.'))
     } finally { setSaving(false) }
   }
 
   const handleDeleteFlight = async (id: number) => {
-    await adminDeleteFlight(id)
-    setConfirm(null)
-    fetchFlights(page)
+    try {
+      await adminDeleteFlight(id)
+      setConfirm(null)
+      fetchFlights(page)
+      toast.success('Vuelo eliminado correctamente.')
+    } catch {
+      toast.error('No se pudo eliminar el vuelo. Intentá de nuevo.')
+    }
   }
 
   const handleToggleFlight = async (id: number) => {
-    await adminToggleFlight(id)
-    fetchFlights(page)
+    try {
+      await adminToggleFlight(id)
+      fetchFlights(page)
+      toast.success('Estado del vuelo actualizado.')
+    } catch {
+      toast.error('No se pudo cambiar el estado del vuelo.')
+    }
   }
 
   const addImage = () => {
@@ -227,16 +239,21 @@ export default function AdminPage() {
         : await adminCreateCategory(catForm)
       setShowCatForm(false)
       refreshShared()
+      toast.success(editingCatId ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.')
     } catch (err: unknown) {
-      const res = (err as { response?: { data?: { message?: string } } }).response
-      setCatError(res?.data?.message ?? 'Error al guardar.')
+      setCatError(getErrorMessage(err, 'Error al guardar.'))
     } finally { setSavingCat(false) }
   }
 
   const handleDeleteCat = async (id: number) => {
-    await adminDeleteCategory(id)
-    setConfirmCat(null)
-    refreshShared()
+    try {
+      await adminDeleteCategory(id)
+      setConfirmCat(null)
+      refreshShared()
+      toast.success('Categoría eliminada correctamente.')
+    } catch {
+      toast.error('No se pudo eliminar la categoría.')
+    }
   }
 
   // ─── características actions ─────────────────────────────────────────────────
@@ -265,16 +282,21 @@ export default function AdminPage() {
         : await adminCreateCharacteristic(charForm)
       setShowCharForm(false)
       refreshShared()
+      toast.success(editingCharId ? 'Característica actualizada correctamente.' : 'Característica creada correctamente.')
     } catch (err: unknown) {
-      const res = (err as { response?: { data?: { message?: string } } }).response
-      setCharError(res?.data?.message ?? 'Error al guardar.')
+      setCharError(getErrorMessage(err, 'Error al guardar.'))
     } finally { setSavingChar(false) }
   }
 
   const handleDeleteChar = async (id: number) => {
     if (!window.confirm('¿Eliminar esta característica?')) return
-    await adminDeleteCharacteristic(id)
-    refreshShared()
+    try {
+      await adminDeleteCharacteristic(id)
+      refreshShared()
+      toast.success('Característica eliminada correctamente.')
+    } catch {
+      toast.error('No se pudo eliminar la característica.')
+    }
   }
 
   // ─── render ──────────────────────────────────────────────────────────────────
@@ -305,29 +327,6 @@ export default function AdminPage() {
 
       <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Auth gate — must be admin */}
-        {!user && (
-          <div className="mt-20 flex flex-col items-center text-center gap-4">
-            <Lock className="w-14 h-14 text-navy-300" />
-            <h2 className="text-xl font-bold text-gray-900">Acceso restringido</h2>
-            <p className="text-gray-500 text-sm">Necesitás iniciar sesión para acceder al panel de administración.</p>
-            <div className="flex gap-3 mt-2">
-              <Link to="/login" className="btn-primary px-6 py-2.5 text-sm">Iniciar sesión</Link>
-              <Link to="/register" className="btn-secondary px-6 py-2.5 text-sm">Crear cuenta</Link>
-            </div>
-          </div>
-        )}
-
-        {user && user.role !== 'ADMIN' && (
-          <div className="mt-20 flex flex-col items-center text-center gap-4">
-            <ShieldOff className="w-14 h-14 text-navy-300" />
-            <h2 className="text-xl font-bold text-gray-900">Sin permisos</h2>
-            <p className="text-gray-500 text-sm">Tu cuenta no tiene permisos de administrador.</p>
-            <Link to="/" className="btn-primary px-6 py-2.5 text-sm mt-2">Volver al inicio</Link>
-          </div>
-        )}
-
-        {user?.role === 'ADMIN' && (
         <>
         <div className="mt-8 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Panel de Administración</h1>
@@ -355,7 +354,15 @@ export default function AdminPage() {
               {loadingFlights ? (
                 <div className="py-16 text-center text-gray-400">Cargando...</div>
               ) : fetchError ? (
-                <div className="py-16 text-center text-red-500 text-sm">{fetchError}</div>
+                <div className="py-16 text-center space-y-3">
+                  <p className="text-red-500 text-sm">{fetchError}</p>
+                  <button
+                    onClick={() => fetchFlights(page)}
+                    className="text-xs text-navy-600 font-medium hover:underline"
+                  >
+                    Reintentar
+                  </button>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm" style={{ minWidth: '860px' }}>
@@ -596,7 +603,6 @@ export default function AdminPage() {
           </div>
         )}
         </>
-        )}
       </div>
 
       {/* ── MODAL: Vuelo ─────────────────────────────────────────────────────── */}
