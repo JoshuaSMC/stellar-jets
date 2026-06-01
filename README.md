@@ -70,8 +70,8 @@ Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse
 
 ### 📦 Clonar el repositorio
 ```bash
-git clone https://github.com/JoshuaSMC/stellar-jets.git
-cd stellar-jets
+git clone https://github.com/JoshuaSMC/flight-booking-platform-spring-react.git
+cd flight-booking-platform-spring-react
 ```
 
 ---
