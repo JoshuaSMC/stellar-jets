@@ -11,8 +11,8 @@ Plataforma web de reservas de vuelos premium. Permite a los usuarios registrarse
 | | URL |
 |---|---|
 | **Frontend** | https://stellarjets.netlify.app |
-| **Backend / API** | https://stellar-jets-production.up.railway.app |
-| **Swagger UI** | https://stellar-jets-production.up.railway.app/swagger-ui.html |
+| **Backend / API** | https://flight-booking-platform-spring-react.onrender.com |
+| **Swagger UI** | https://flight-booking-platform-spring-react.onrender.com/swagger-ui.html |
 
 ---
 
